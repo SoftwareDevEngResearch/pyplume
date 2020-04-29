@@ -6,7 +6,7 @@
 # @Last modified time: 2020-04-10T09:53:34-07:00
 
 #imports
-import cantera
+import cantera as ct
 
 gas1 = cantera.Solution('gri30.xml')
 gas1.TP = 600,101325 #K,Pa
