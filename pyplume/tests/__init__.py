@@ -1,1 +1,1 @@
-from .testMechs import *
+from . import testMechs

@@ -1,2 +1,1 @@
-from .mech import *
-# from .generation import *
+from . import mech
