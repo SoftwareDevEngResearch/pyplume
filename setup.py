@@ -16,9 +16,12 @@ setuptools.setup(
     entry_points={
         'console_scripts': [
             'pyplume.mech=pyplume.mech:mechCLI'
+
         ]
     },
     packages=setuptools.find_packages(),
+    package_dir={'pyplume':'./pyplume', 'tests':'./pyplume/tests'},
+    package_data={'pyplume': ['mechanisms/*','originals/*','tests/*']},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: BSD License",
