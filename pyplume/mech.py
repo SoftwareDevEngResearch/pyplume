@@ -40,7 +40,7 @@ def mechFileRestore():
     print("done.\n")
 
 def mechFileDelete(fname):
-    """Use this function to restore the original mechanism files supplied."""
+    """Use this function to delete a mechanism file supplied."""
     #get directory path of package
     print("\nRemoving {} mechanism file...\n".format(fname))
     direc = os.path.dirname(os.path.abspath(__file__))
@@ -49,7 +49,7 @@ def mechFileDelete(fname):
     print('done.\n')
 
 def mechFileList():
-    """Use this function to restore the original mechanism files supplied."""
+    """Use this function to list mechanism files supplied."""
     #get directory path of package
     print("\nListing mechanism files.\n")
     direc = os.path.dirname(os.path.abspath(__file__))
@@ -59,6 +59,7 @@ def mechFileList():
     print("done.\n")
 
 def mechCLI():
+    """This function is used for the command line interface option of mech"""
     parser = argparse.ArgumentParser(description="""This is the commandline interface for
     managing mechanism files of PyPlume.
     """)
