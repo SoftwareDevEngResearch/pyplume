@@ -14,7 +14,7 @@ import sys,os
 class PlumeModel(object):
     """PlumeModel class is used to generate a reactor network for modeling exhaust plume"""
 
-    def __init__(self,ncols,cmech,emech,efun=lambda x:x,setCanteraPath=None,build=False,bin=False):
+    def __init__(self,mechs,connections,massFlows,setCanteraPath=None,build=False,bin=False):
         """constructor for plume model.
         Parameters:
         ncols - number of columns in the exhaust reactor network.
@@ -109,4 +109,7 @@ class PlumeModel(object):
         self.mdot = mdot
 
 if __name__ == "__main__":
-    pm = PlumeModel(3,"gri30.cti","air.cti",build=True)
+    # pm = PlumeModel(3,"gri30.cti","air.cti",build=True)
+    for i in range(9):
+        if i:
+            print(i)
