@@ -1,19 +1,50 @@
-# plume-generation-and-analysis
+# PyPlume
 This package is intended to build reactor network models for exhaust plumes based on user input and incorporate some methods for analysis of the results.
 
 ### Model generation tool
+The model generation tool can be implemented with the most functionality in a script but there is also a command line interface. The code works by creating an object which represents a complex reactor network created by Cantera.
 
----Not implemented yet---
+#### Creating model object
+```python
+class PlumeModel(self,ncols,cmech,emech,efun=lambda x:x*x,setCanteraPath=None,build=False,bin=False)
+"""
+    Parameters:
+    ncols - number of columns in the exhaust reactor network.
+    cmech - mechanism file for the combustor as a path to file (relative or absolute)
+    emech - mechanism file for the exhaust stream.
+    efun - a single parameter function e.g. f(n) that returns the number of reactors in a column
+        default: efun=lambda x:x*x
+    setCanteraPath - path variable to cantera mech files
+    build -  boolean that builds network strictly from configuration in mechanism files (T,P) if true.
+        default: build=false
+    bin - boolean that builds
+  """
+```
+
+#FIXME
+```python
+plumeModel = PlumeModel(2,"gri30.cti","air.cti") #Create model object
+```
+
+#### Setting Air and Fuel conditions
+##### In a script
+```python
+plumeModel.fuel.TPX = 300.0, 101325, 'CH4:1' #K, Pa, Mole Fractions
+plumeModel.air.TPX = 300.0, 101325, 'O2:0.21, N2:0.78, AR:0.01' #K, Pa, Mole Fractions
+```
+
+##### On the command line
+
 
 ### Mechanism management
 
 Mechanism files that you want to use with this model generation software can be managed in two ways. The first way is through the command line interface (CLI). The `pyplume.mech` is the command which will be used to invoke the necessary commands to manage the mechanisms.
 
 To list the functions, invoke the help menu.
-```
+```shell
   pyplume.mech -h
 ```
-```
+```shell
 usage: pyplume.mech [-h] [-r] [-l] [-a ADD] [-d DELETE] [-t]
 
 This is the commandline interface for managing mechanism files of PyPlume.
