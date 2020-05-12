@@ -9,32 +9,32 @@
 import cantera as ct
 import itertools as it
 import numpy as np
-import sys,os
+import sys,os,traceback
+
 
 class PlumeModel(object):
     """PlumeModel class is used to generate a reactor network for modeling exhaust plume"""
 
-    def __init__(self,mechs,mflows,connects,setCanteraPath=None,build=False,bin=False):
+    def __init__(self, mechs, connects, inflow=lambda t: 10, entrainment=lambda t:0.1,setCanteraPath=None,build=False,bin=False):
         """constructor for plume model.
         Parameters:
         mechs - an array like structure with at least 3 mechanisms, [fuelMech,airMech,eMech1,eMech2,...,eMechN]
-        mflows - an array like structure of mass flow functions (or constants) that dictate the mass flow between reactors.
+        inflow - a function that specifies the inlet mass flow as a function of time.
+        entrainment - a function that specifies entrainment mass as a function of time.
         connects - an 2d adjacency matrix with integer values corresponding to the appropriate mass flow function+1 in the list of mass flow functions.
                     So, the first mass flow function, 0 index, will be represented as 1 in the matrix. This is because these values will be used for conditionals
                     as well. A template matrix can be generated. The matrix should specifically
         setCanteraPath - path variable to cantera mech files
         build -  boolean that builds network strictly from configuration in mechanism files (T,P) if true.
             default: build=false
-        bin - boolean that builds
-
-        Notes:
-        The mass flow functions
+        bin - boolean that builds executable model
         """
         super(PlumeModel, self).__init__()
         #Saving contents into self of inputs
         self.mechs = mechs
         self.connects = connects
-        self.mflows = mflows
+        self.inflow = inflow
+        self.entrainment = entrainment
         self.build = build
         self.nex = connects.shape[0]-3
         #Building objects for fuel and air
@@ -83,7 +83,7 @@ class PlumeModel(object):
         self.reactors += ct.ConstPressureReactor(self.fuel,name='combustor'),ct.ConstPressureReactor(self.air,name='exhaust')
         self.reactors += ct.Reservoir(self.air,name='atmosphere'),
         #Creating main controls
-        self.controllers = ct.MassFlowController(self.reactors[0],self.reactors[1],mdot=self.mdot), #Fuel Air Mixture MFC
+        self.controllers = ct.MassFlowController(self.reactors[0],self.reactors[1],mdot=self.inflow), #Fuel Air Mixture MFC
         self.controllers += ct.PressureController(self.reactors[1],self.reactors[2],master=self.controllers[0],K=self.pressCoeff), #Exhaust PFC
 
     def createExhaustReactors(self):
@@ -93,78 +93,93 @@ class PlumeModel(object):
 
     def connectExhausts(self):
         """Use this function to connect exhaust reactors."""
-        #Connect main exhaust to first reactor/reactors
-        for ereact in self.exs[0]:
-            self.controllers+=ct.PressureController(self.reactors[2],ereact,master=None,K=self.pressCoeff)
-
-        for i in range(len(self.exs)):
-            clen = len(self.exs[i])
-            if clen-1:
-                print("if {} {}".format(i,clen))
-            else:
-                self.controllers+=ct.PressureController(self.exs)
+        #go through adj matrix here and connect with massFlowControllers.
+        #will need to figure out communication strategy for continuity in
+        #exhaust reactors but linearExpansionModel is made
 
     def setMassFlow(self,mdot):
         """Use this function to set mass flow function or value."""
         self.mdot = mdot
 
-#End of class methods
-def connectionTemplate(n=0):
-    """
-    Use this function to create a template for the connection matrix.
-    Parameters:
-    n - number of exhaust reactors in the model
-    Returns
-    matrix: template connections matrix
+    #Class methods that implement certain kinds of reactor ideas.
+    @classmethod
+    def linearExpansionModel(cls,n=10,mechs=["gri30.cti","air.cti","gri30.cti"],inflow=lambda t: 10, entrainment=lambda t:0.1,setCanteraPath=None,build=False,bin=False):
+        """ Use this function to generate an instance with linear expansion connects method. It takes all the parameters
+            that the class does except connects and replaces connects with n parameter.
 
-    Notes:
-    If no n value is entered this is the minimal case (n=0).
-    [0, 1, 0 ,0]
-    [0, 0, 2, 0]
-    [0, 0, 0, 0]
-    [0, 0, 3, 0]
-    which means fuel res -> combustor -> exhaust <- farfield (for entrainment)
-    this implies 3 mass flow functions, 1 for fuel->combustor, 2 for combustor->exhaust, and 3 for farfield->exhaust.
-    """
-    n+=4
-    matrix = np.zeros((n,n)) #n+2 to include fuel reservoir, combustor,exhaust, and farfield
-    matrix[0,1] = 1 #connect fuel res to combustor
-    matrix[1,2] = 2
-    matrix[-1,2] = 3
-    return matrix
+        Parameters:
+            n - number of reactors using linear expansion. e.g. at level 1 there is one reactor
+                at level two there are two and so on. n must result in an integer number of steps
+                based on the formula:steps=(-1+np.sqrt(1+8*n))/2
 
-def linearExpansionConnects(n=6,fcn=lambda L:4):
-    """ Use this function to generate a test connects matrix.
-    Parameters:
-        n - number of reactors using linear expansion. e.g. at level 1 there is one reactor
-            at level two there are two and so on.
-        fcn -  a function that takes L (the level) and returns a number which is assigned as the mass flow index
-                default: lambda L:4 which implies a fourth mass flow function.
+        Linear expansion model:
+        [fuel res]->[combustor]->[ex1]->[ex2]->[ex4]
+                                      ->[ex3]->[ex5]
+                                             ->[ex6]
+        [farfield]->[ex1,ex2,ex3,ex4,ex6]
 
-    [fuel res]->[combustor]->[ex1]->[ex2]->[ex4]
-                                  ->[ex3]->[ex5]
-                                         ->[ex6]
-    [farfield]->[ex1,ex2,ex3,ex4,ex6]
-    Notes:
-        Far field is connected to all exhausts with mass flow function 3
-    """
-    getsteps = lambda k: int((-1+np.sqrt(1+8*k))/2)
-    connects = connectionTemplate(n-1) #Add five extra reactors
-    x = 1
-    j = 3
-    i = 2
-    steps = getsteps(n-1)
-    #Fill exhaust dependency
-    for cn in range(2,2+steps):
-        connects[i:i+x,j:j+x+1] = fcn(cn)
-        i+=x
-        x = x+1
-        j+=x
-    connects[-1,2:] = 3
-    return connects
+        Notes:
+        The farfield is connected as an inlet for each exterior reactor if you were to draw them as 2D blocks.
+        """
+        connects = np.zeros((n+1,n+1))
+        getsteps = lambda k: (-1+np.sqrt(1+8*k))/2
+        x = 1
+        j = 1
+        i = 0
+        steps = getsteps(n)
+        #Check if is integer
+        try:
+            if steps.is_integer():
+                steps = int(steps)
+            else:
+                raise TypeError("{}: is not an Integer as required by: steps=(-1+np.sqrt(1+8*n))/2".format(steps))
+        except TypeError as e:
+            tb = traceback.format_exc()
+            print(tb)
+            sys.exit()
+            pass
+        #Fill exhaust dependency
+        for cn in range(2,2+steps-1):
+            connects[i:i+x,j:j+x+1] = 1
+            i+=x
+            x = x+1
+            j+=x
+        #Connecting farfield
+        idx = it.cycle(np.arange(0,n,1))
+        for i in range(steps):
+            if i+1 >= 3:
+                connects[-1,next(idx)]=1
+                for j in range(1,i):
+                    connects[-1,next(idx)]=0
+                connects[-1,next(idx)]=1
+            else:
+                for j in range(i+1):
+                    connects[-1,next(idx)]=1
+        return cls(mechs,connects)
+
+    @classmethod
+    def gridModel(cls,n=5,m=5,mechs=["gri30.cti","air.cti","gri30.cti"],inflow=lambda t: 10, entrainment=lambda t:0.1,setCanteraPath=None,build=False,bin=False):
+        """ Use this function to generate an instance with grid connects method. It takes all the parameters
+            that the class does except connects and replaces connects with n parameter.
+
+        Parameters:
+            n - Integer number of reactor rows
+            m - Integer number of reactor columns
+
+        Grid model (3x3):
+        [fuel res]->[combustor]->[ex1]->[ex4]->[ex7]
+                               ->[ex2]->[ex5]->[ex8]
+                               ->[ex3]->[ex6]->[ex9]
+
+        [farfield]->[ex1,ex7,ex4,ex3,ex6,ex9]
+
+        Notes:
+        The farfield is connected as an inlet for each exterior reactor if you were to draw them as 2D blocks.
+        """
+        clen = int(n*m+1)
+        connects = np.zeros((clen,clen))
+
 
 if __name__ == "__main__":
-    connects = linearExpansionConnects()
-    mflows = [10,10,0.1,]
-    mechs = ["gri30.cti","air.cti","gri30.cti"]
-    pm = PlumeModel(mechs,mflows,connects,build=True)
+    pm = PlumeModel.linearExpansionModel()
+    print(pm.connects)
