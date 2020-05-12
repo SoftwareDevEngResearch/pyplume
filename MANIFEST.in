@@ -1,0 +1,4 @@
+include README.md
+recursive-include pyplume/originals/ *.cti *.xml
+recursive-include pyplume/mechanisms/ *.cti *.xml
+recursive-include pyplume/tests *.py *.cti *.xml

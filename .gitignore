@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+#my script
+reinstall_script.sh
+
 # C extensions
 *.so
 
