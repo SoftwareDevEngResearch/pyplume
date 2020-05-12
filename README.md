@@ -5,26 +5,79 @@ This package is intended to build reactor network models for exhaust plumes base
 The model generation tool can be implemented with the most functionality in a script but there is also a command line interface. The code works by creating an object which represents a complex reactor network created by Cantera.
 
 #### Creating model object
+
+A model can be generated in multiple ways. The first is by creating an adjacency matrix, specifying mechansims for air, fuel, and exhaust, providing mass flow functions, and setting other configuration options. Forming the adjacency matrix is the most cumbersome part of this so some class methods have been included for this task. These class methods take other parameters used in determination of the adjacency matrix as well as the remaining parameters of the class constructor.
+
+#### Class constructor
+
 ```python
-class PlumeModel(self,ncols,cmech,emech,efun=lambda x:x*x,setCanteraPath=None,build=False,bin=False)
-"""
-    Parameters:
-    ncols - number of columns in the exhaust reactor network.
-    cmech - mechanism file for the combustor as a path to file (relative or absolute)
-    emech - mechanism file for the exhaust stream.
-    efun - a single parameter function e.g. f(n) that returns the number of reactors in a column
-        default: efun=lambda x:x*x
-    setCanteraPath - path variable to cantera mech files
-    build -  boolean that builds network strictly from configuration in mechanism files (T,P) if true.
-        default: build=false
-    bin - boolean that builds
-  """
+class PlumeModel(object):
+    """PlumeModel class is used to generate a reactor network for modeling exhaust plume"""
+
+    def __init__(self, mechs, connects, inflow=lambda t: 10, entrainment=lambda t:0.1,setCanteraPath=None,build=False,bin=False):
+        """constructor for plume model.
+        Parameters:
+        mechs - an array like structure with at least 3 mechanisms, [fuelMech,airMech,eMech1,eMech2,...,eMechN]
+        inflow - a function that specifies the inlet mass flow as a function of time.
+        entrainment - a function that specifies entrainment mass as a function of time.
+        connects - an 2d adjacency matrix with integer values corresponding to the appropriate mass flow function+1 in the list of mass flow functions.
+                    So, the first mass flow function, 0 index, will be represented as 1 in the matrix. This is because these values will be used for conditionals
+                    as well. A template matrix can be generated. The matrix should specifically
+        setCanteraPath - path variable to cantera mech files
+        build -  boolean that builds network strictly from configuration in mechanism files (T,P) if true.
+            default: build=false
+        bin - boolean that builds executable model
+        """
 ```
 
-#FIXME
+#### Linear Expansion Model
 ```python
-plumeModel = PlumeModel(2,"gri30.cti","air.cti") #Create model object
+@classmethod
+def linearExpansionModel(cls,n=10,mechs=["gri30.cti","air.cti","gri30.cti"],inflow=lambda t: 10, entrainment=lambda t:0.1,setCanteraPath=None,build=False,bin=False):
+    """ Use this function to generate an instance with linear expansion connects method. It takes all the parameters
+        that the class does except connects and replaces connects with n parameter.
+
+    Parameters:
+        n - number of reactors using linear expansion. e.g. at level 1 there is one reactor
+            at level two there are two and so on. n must result in an integer number of steps
+            based on the formula:steps=(-1+np.sqrt(1+8*n))/2
+
+    Linear expansion model:
+    [fuel res]->[combustor]->[ex1]->[ex2]->[ex4]
+                                  ->[ex3]->[ex5]
+                                         ->[ex6]
+    [farfield]->[ex1,ex2,ex3,ex4,ex6]
+
+    Notes:
+    The farfield is connected as an inlet for each exterior reactor if you were to draw them as 2D blocks.
+    """
 ```
+
+#### Grid model
+```python
+@classmethod
+def gridModel(cls,n=5,m=5,mechs=["gri30.cti","air.cti","gri30.cti"],inflow=lambda t: 10, entrainment=lambda t:0.1,setCanteraPath=None,build=False,bin=False):
+    """ Use this function to generate an instance with grid connects method. It takes all the parameters
+        that the class does except connects and replaces connects with n parameter.
+
+    Parameters:
+        n - Integer number of reactor rows
+        m - Integer number of reactor columns
+
+    Grid model (3x3):
+    [fuel res]->[combustor]->[ex1]->[ex4]->[ex7]
+                           ->[ex2]->[ex5]->[ex8]
+                           ->[ex3]->[ex6]->[ex9]
+
+    [farfield]->[ex1,ex7,ex4,ex3,ex6,ex9]
+
+    Notes:
+    The farfield is connected as an inlet for each exterior reactor if you were to draw them as 2D blocks.
+    """
+```
+
+
+
 
 #### Setting Air and Fuel conditions
 ##### In a script
@@ -98,3 +151,6 @@ pyplume.tests.testMechs.CLI() #Run tests for mech management
 ### Plotting
 
 ---Not implemented yet---
+
+### Testing
+Each python file has an associated test file which contains unit test functions. As the package is developed, more functions will be added and integrated function tests will be added.
