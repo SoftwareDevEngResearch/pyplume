@@ -2,13 +2,13 @@
 This package is intended to build reactor network models for exhaust plumes based on user input and incorporate some methods for analysis of the results.
 
 ### Model generation tool
-The model generation tool can be implemented with the most functionality in a script but there is also a command line interface. The code works by creating an object which represents a complex reactor network created by Cantera.
+The model generation tool can be implemented with the most functionality in a script but there is also a command line interface. The code works by creating an object which represents a complex reactor network created by Cantera. This reactor network is made up of a two reservoirs, a combustor, and the desired exhaust network. One reservoir is for the fuel/air mixture and another for the atmosphere. The combustor assumes the mechanism of the fuel/air reservoir and the exhaust is the focus of the model which has the most configurable options. The fuel/air reservoir is connected to the combustor via a `MassFlowController` where reaction occurs is fed to the exhaust via a `PressureController`. The exhaust reactors remaining then include entrainment and mass flow via `MassFlowController`. Functions can be specified for inlet mass flow and entrainment mass flow as a function of time. Continuity is then used in a simple manner to control the flow of mass between the exhaust network. This can be controlled to some extent via the adjacency matrix supplied called `connects`.
 
 #### Creating model object
 
 A model can be generated in multiple ways. The first is by creating an adjacency matrix, specifying mechansims for air, fuel, and exhaust, providing mass flow functions, and setting other configuration options. Forming the adjacency matrix is the most cumbersome part of this so some class methods have been included for this task. These class methods take other parameters used in determination of the adjacency matrix as well as the remaining parameters of the class constructor.
 
-#### Class constructor
+##### Class constructor
 
 ```python
 class PlumeModel(object):
@@ -30,7 +30,7 @@ class PlumeModel(object):
         """
 ```
 
-#### Linear Expansion Model
+##### Linear Expansion Model
 ```python
 @classmethod
 def linearExpansionModel(cls,n=10,mechs=["gri30.cti","air.cti","gri30.cti"],inflow=lambda t: 10, entrainment=lambda t:0.1,setCanteraPath=None,build=False,bin=False):
@@ -53,7 +53,7 @@ def linearExpansionModel(cls,n=10,mechs=["gri30.cti","air.cti","gri30.cti"],infl
     """
 ```
 
-#### Grid model
+##### Grid model
 ```python
 @classmethod
 def gridModel(cls,n=5,m=5,mechs=["gri30.cti","air.cti","gri30.cti"],inflow=lambda t: 10, entrainment=lambda t:0.1,setCanteraPath=None,build=False,bin=False):
@@ -76,18 +76,30 @@ def gridModel(cls,n=5,m=5,mechs=["gri30.cti","air.cti","gri30.cti"],inflow=lambd
     """
 ```
 
+Now that you have created your model object with the constructor or one of the class methods, e.g,
+```python
+  import pyplume.model.PlumeModel
+  plumeModel = PlumeModel.linearExpansionModel()
+```
 
 
+#### Setting Atmophere and Fuel conditions
+Configuration can be important to any simulation, this can be skipped if you want to use the configuration inside the supplied mechanism files.
+Otherwise, `PlumeModel` has 3 attributes that it uses to maintain the conditions of the model.
+`fuel` which is a Cantera Solution object for the fuel,
+`atmosphere` which is a Cantera Solution object for the atmosphereic conditions, and `exhausts` which is a list of Cantera Solution object(s). The fuel an atmosphere conditions can be configured for each reactor as you would configure them for any other Cantera solution object. Note, that fuel is considered to be the fuel air mixture for the combustor. Since the focus on this project is the exhaust, the exhaust is produced by a single reactor which is fed into the exhaust system. The atmosphere is for entrainment purposes.
 
-#### Setting Air and Fuel conditions
 ##### In a script
 ```python
-plumeModel.fuel.TPX = 300.0, 101325, 'CH4:1' #K, Pa, Mole Fractions
-plumeModel.air.TPX = 300.0, 101325, 'O2:0.21, N2:0.78, AR:0.01' #K, Pa, Mole Fractions
+plumeModel.fuel.TPX = 300.0, 101325, 'CH4:1, O2:0.5' #K, Pa, Mole Fractions
+plumeModel.atmosphere.TPX = 300.0, 101325, 'O2:0.21, N2:0.78, AR:0.01' #K, Pa, Mole Fractions
+plumeModel.exhausts[3].TPX= 300.0, 101325, 'O2:0.21, N2:0.78, AR:0.01' #Set conditions for exhaust 3
 ```
 
 ##### On the command line
 
+---Not yet Implemented---
+<!-- Working on this -->
 
 ### Mechanism management
 

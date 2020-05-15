@@ -18,7 +18,7 @@ class PlumeModel(object):
     def __init__(self, mechs, connects, inflow=lambda t: 10, entrainment=lambda t:0.1,setCanteraPath=None,build=False,bin=False):
         """constructor for plume model.
         Parameters:
-        mechs - an array like structure with at least 3 mechanisms, [fuelMech,airMech,eMech1,eMech2,...,eMechN]
+        mechs - an array like structure with at least 3 mechanisms, [fuelMech,atmMech,eMech1,eMech2,...,eMechN]
         inflow - a function that specifies the inlet mass flow as a function of time.
         entrainment - a function that specifies entrainment mass as a function of time.
         connects - an 2d adjacency matrix with integer values corresponding to the appropriate mass flow function+1 in the list of mass flow functions.
@@ -36,10 +36,9 @@ class PlumeModel(object):
         self.inflow = inflow
         self.entrainment = entrainment
         self.build = build
-        self.nex = connects.shape[0]-3
-        #Building objects for fuel and air
-        self.fuel = ct.Solution(self.mechs[0])
-        self.air = ct.Solution(self.mechs[1])
+        self.bin=bin
+        self.nex = connects.shape[0]-1
+
         # Add cantera or mechanisms path
         if setCanteraPath is not None:
             ct.add_directory(setCanteraPath)
@@ -49,13 +48,19 @@ class PlumeModel(object):
             sys.path.append(self.mechPath)
 
         #Setting values for parameters constant at the moment but will need updated
-        self.mdot = 1 #m/s mass flow rate of fuel air mixture
         self.eqRatio = 0.8 #equivalence ratio for fuel air mixture
         self.pressCoeff = 0.01 #kg/s/Pa pressure coefficient for pressure controller
 
-        # #Optionally building network from initialization
+        #Creation of gas objects for reactors
+        self.createGases()
+
+        #Optionally building network from initialization
         if self.build:
             self.buildNetwork()
+
+        #Optionally create executable model
+        if self.bin:
+            self.createExecutableModel()
 
     def __call__(self):
         """Use this function to call the object and iterate the reactor through time."""
@@ -63,43 +68,92 @@ class PlumeModel(object):
 
     def buildNetwork(self):
         """Call this function to build the network."""
-        self.createNonExhaustReactors()
-        self.createExhaustReactors()
-        self.connectExhausts()
+        self.createReactors()
+        self.connectReactors()
+        print(dir(self.reactors[2]))
+        print(self.reactors[2].mass)
+
+    def createGases(self):
+        """This function creates gases to be used in building the reactor network.
+        """
+        #Building objects for fuel and air
+        self.fuel = ct.Solution(self.mechs[0])
+        self.atmosphere = ct.Solution(self.mechs[1])
+        self.exhausts = [ct.Solution(mech) for mech in self.mechs[2:]]
+
+    def createReactors(self):
+        """Use this function to create exhaust stream network"""
+        #Creating fuel reservoir
+        self.reactors = ct.Reservoir(contents=self.fuel,name='fuel'),
+        #Creating combustor
+        self.reactors += ct.ConstPressureReactor(contents=self.fuel,name='combustor',energy='on'),
+        #Creating exhaust reactors
+        exCycle = it.cycle(self.exhausts)
+        self.reactors += tuple([ct.ConstPressureReactor(contents=next(exCycle),name='exhaust{}'.format(i),energy='on') for i in range(self.nex)])
+        #Creating atomspheric reactor
+        self.reactors += ct.Reservoir(contents=self.atmosphere,name='atmosphere'),
+
+    def connectReactors(self):
+        """Use this function to connect exhaust reactors."""
+        #Connecting fuel res -> combustor
+        self.controllers = ct.MassFlowController(self.reactors[0],self.reactors[1],mdot=self.inflow), #Fuel Air Mixture MFC
+        #Connecting combustor -> exhaust
+        self.controllers += ct.PressureController(self.reactors[1],self.reactors[2],master=self.controllers[0],K=self.pressCoeff), #Exhaust PFC
+        #Connecting exhausts -> adj exhaust
+        self.rcsums = []
+        for f, row in enumerate(self.connects[:-1],2):
+            self.rcsums.append(np.sum(row))
+            for t,value in enumerate(row[:-1],start=2):
+                if value:
+                    self.controllers = ct.MassFlowController(self.reactors[f],self.reactors[t]), #Exhaust MFCS
+        #entrainment controllers
+        for t, value in enumerate(self.connects[-1],2):
+            if value:
+                self.controllers = ct.MassFlowController(self.reactors[-1],self.reactors[t],mdot=self.entrainment), #Exhaust MFCS
+
+    def setMassFlowFunctions(self):
+        """Use this function to set mass flow between two reactors."""
+        pass
 
     def createExecutableModel(self):
         """Use this function to create an executable binary"""
         pass
 
-    def createNonExhaustReactors(self):
-        """Create the reservoir which holds the fuel as a gas which will be fed into the combustor.
-        reactors[0] - fuel reservoir
-        reactors[1] - combustor
-        reactors[2] - exhaust
-        reactors[3] - atomsphere (farfield)
-        """
-        #Creating main reactor network reactors
-        self.reactors = ct.Reservoir(self.fuel,name='fuel'),
-        self.reactors += ct.ConstPressureReactor(self.fuel,name='combustor'),ct.ConstPressureReactor(self.air,name='exhaust')
-        self.reactors += ct.Reservoir(self.air,name='atmosphere'),
-        #Creating main controls
-        self.controllers = ct.MassFlowController(self.reactors[0],self.reactors[1],mdot=self.inflow), #Fuel Air Mixture MFC
-        self.controllers += ct.PressureController(self.reactors[1],self.reactors[2],master=self.controllers[0],K=self.pressCoeff), #Exhaust PFC
+    def __str__(self):
+        """This overloads the print function."""
+        statement = 'PyPlume Network Model:\n'
+        T,P,X = self.fuel.TPX
 
-    def createExhaustReactors(self):
-        """Use this function to create exhaust stream network"""
-        emechCycle = it.cycle(mechs[2:])
-        self.exs = [ct.ConstPressureReactor(ct.Solution(next(emechCycle))) for i in range(self.nex)]
+        statement+="\nCombustor: T: {} K, P: {} Pa\n".format(T,P)
+        statement+= ", ".join([self.fuel.species_name(i)+":{:0.1f}".format(x) for i,x in enumerate(X)])
 
-    def connectExhausts(self):
-        """Use this function to connect exhaust reactors."""
-        #go through adj matrix here and connect with massFlowControllers.
-        #will need to figure out communication strategy for continuity in
-        #exhaust reactors but linearExpansionModel is made
+        T,P,X = self.atmosphere.TPX
+        statement+="\n\nAtmosphere: T: {} K, P: {} Pa\n".format(T,P)
+        statement+= ", ".join([self.fuel.species_name(i)+":{:0.1f}".format(x) for i,x in enumerate(X)])
 
-    def setMassFlow(self,mdot):
-        """Use this function to set mass flow function or value."""
-        self.mdot = mdot
+        # for i,exhaust in enumerate(self.exhausts):
+        #     statement+="\n\nAtmosphere: T: {} K, P: {} Pa\n".format(T,P)
+        #     statement+= ", ".join([self.fuel.species_name(i)+":{:0.1f}".format(x) for i,x in enumerate(X)])
+
+        return statement
+
+    def densePrint(self):
+        """This overloads the print function."""
+        statement = 'PyPlume Network Model:\n'
+        T,P,X = self.fuel.TPX
+
+        statement+="\nCombustor: T: {} K, P: {} Pa\n".format(T,P)
+        statement+= ", ".join([self.fuel.species_name(i)+":{:0.1f}".format(x) for i,x in enumerate(X)])
+
+        T,P,X = self.atmosphere.TPX
+        statement+="\n\nAtmosphere: T: {} K, P: {} Pa\n".format(T,P)
+        statement+= ", ".join([self.fuel.species_name(i)+":{:0.1f}".format(x) for i,x in enumerate(X)])
+
+        for i,exhaust in enumerate(self.exhausts):
+            statement+="\n\nAtmosphere: T: {} K, P: {} Pa\n".format(T,P)
+            statement+= ", ".join([self.fuel.species_name(i)+":{:0.1f}".format(x) for i,x in enumerate(X)])
+
+        return statement
 
     #Class methods that implement certain kinds of reactor ideas.
     @classmethod
@@ -155,10 +209,10 @@ class PlumeModel(object):
             else:
                 for j in range(i+1):
                     connects[-1,next(idx)]=1
-        return cls(mechs,connects)
+        return cls(mechs,connects,inflow=inflow,entrainment=entrainment,setCanteraPath=setCanteraPath,build=build,bin=bin)
 
     @classmethod
-    def gridModel(cls,n=5,m=5,mechs=["gri30.cti","air.cti","gri30.cti"],inflow=lambda t: 10, entrainment=lambda t:0.1,setCanteraPath=None,build=False,bin=False):
+    def gridModel(cls,n=3,m=3,mechs=["gri30.cti","air.cti","gri30.cti"],inflow=lambda t: 10, entrainment=lambda t:0.1,setCanteraPath=None,build=False,bin=False):
         """ Use this function to generate an instance with grid connects method. It takes all the parameters
             that the class does except connects and replaces connects with n parameter.
 
@@ -167,19 +221,30 @@ class PlumeModel(object):
             m - Integer number of reactor columns
 
         Grid model (3x3):
-        [fuel res]->[combustor]->[ex1]->[ex4]->[ex7]
-                               ->[ex2]->[ex5]->[ex8]
-                               ->[ex3]->[ex6]->[ex9]
+        [fuel res]->[combustor]->[ex0]->[ex1]->[ex4]->[ex7]
+                                      ->[ex2]->[ex5]->[ex8]
+                                      ->[ex3]->[ex6]->[ex9]
 
-        [farfield]->[ex1,ex7,ex4,ex3,ex6,ex9]
+        [farfield]->[ex0,ex1,ex7,ex4,ex3,ex6,ex9]
 
         Notes:
         The farfield is connected as an inlet for each exterior reactor if you were to draw them as 2D blocks.
         """
-        clen = int(n*m+1)
+        clen = int(n*m+2)
         connects = np.zeros((clen,clen))
-
+        #Fill reactor 0
+        for i in range(n):
+            connects[0,i+1] = 1
+        #Fill remaining
+        for i in range(1,clen-n):
+            connects[i,i+n] = 1
+        #Connect farfield
+        connects[-1,0] = 1
+        for i in range(1,clen-n,n):
+            connects[-1,i]=1
+            connects[-1,i+n-1]=1
+        return cls(mechs,connects,inflow=inflow,entrainment=entrainment,setCanteraPath=setCanteraPath,build=build,bin=bin)
 
 if __name__ == "__main__":
     pm = PlumeModel.linearExpansionModel()
-    print(pm.connects)
+    pm.buildNetwork()
