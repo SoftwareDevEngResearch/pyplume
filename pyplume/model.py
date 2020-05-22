@@ -9,7 +9,7 @@
 import cantera as ct
 import itertools as it
 import numpy as np
-import sys,os,traceback
+import sys,os,traceback,types
 
 
 class PlumeModel(object):
@@ -31,13 +31,13 @@ class PlumeModel(object):
         """
         super(PlumeModel, self).__init__()
         #Saving contents into self of inputs
-        self.mechs = mechs
-        self.connects = connects
-        self.inflow = inflow
-        self.entrainment = entrainment
-        self.build = build
-        self.bin=bin
-        self.nex = connects.shape[0]-1
+        self.mechs = mechs #mechanisms used in gas creation
+        self.connects = connects #Adjacency matrix of connections
+        self.inflow = inflow #A function that specifies mass flow in
+        self.entrainment = entrainment #a function that specifies mass entrainment
+        self.build = build #This is a bool that says to build on construction
+        self.bin=bin #This is a bool that says to create executable model or not
+        self.nex = connects.shape[0]-1 #This is the number of exhaust reactors
 
         # Add cantera or mechanisms path
         if setCanteraPath is not None:
@@ -69,9 +69,14 @@ class PlumeModel(object):
     def buildNetwork(self):
         """Call this function to build the network."""
         self.createReactors()
+        self.createMassFlowFunctions()
         self.connectReactors()
         print(dir(self.reactors[2]))
-        print(self.reactors[2].mass)
+        print(self.massFlowFunctions[0])
+        self.massFlowFunctions[0](1)
+        # for mfc in self.massFlowFunctions:
+        #     mfc(0)
+        # print(self.reactors[2].mass)
 
     def createGases(self):
         """This function creates gases to be used in building the reactor network.
@@ -93,6 +98,29 @@ class PlumeModel(object):
         #Creating atomspheric reactor
         self.reactors += ct.Reservoir(contents=self.atmosphere,name='atmosphere'),
 
+    def createMassFlowFunctions(self):
+        """This function uses a closure to generate mass flow controller functions for exhaust plume network"""
+        self.massFlowFunctions = []
+        name = 'mdot'
+        for i in range(self.nex):
+            def mdot(t):
+                # return combustor.mass / residence_time
+                print(i)
+            mdot_code = types.CodeType(1,
+                        mdot.__code__.co_kwonlyargcount,
+                        mdot.__code__.co_nlocals,
+                        mdot.__code__.co_stacksize,
+                        mdot.__code__.co_flags,
+                        mdot.__code__.co_code,
+                        mdot.__code__.co_consts,
+                        mdot.__code__.co_names,
+                        mdot.__code__.co_varnames,
+                        mdot.__code__.co_filename,
+                        name+str(i),
+                        mdot.__code__.co_firstlineno,
+                        mdot.__code__.co_lnotab)
+            self.massFlowFunctions.append(types.FunctionType(mdot_code, mdot.__globals__, name+str(i)))
+
     def connectReactors(self):
         """Use this function to connect exhaust reactors."""
         #Connecting fuel res -> combustor
@@ -110,10 +138,6 @@ class PlumeModel(object):
         for t, value in enumerate(self.connects[-1],2):
             if value:
                 self.controllers = ct.MassFlowController(self.reactors[-1],self.reactors[t],mdot=self.entrainment), #Exhaust MFCS
-
-    def setMassFlowFunctions(self):
-        """Use this function to set mass flow between two reactors."""
-        pass
 
     def createExecutableModel(self):
         """Use this function to create an executable binary"""
