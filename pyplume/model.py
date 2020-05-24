@@ -69,11 +69,15 @@ class PlumeModel(object):
     def buildNetwork(self):
         """Call this function to build the network."""
         self.createReactors()
-        self.createMassFlowFunctions()
+        # self.createMassFlowFunctions()
         self.connectReactors()
-        print(dir(self.reactors[2]))
-        print(self.massFlowFunctions[0])
-        self.massFlowFunctions[0](1)
+        for react in self.rCons:
+            print(react.sink)
+            print(react.source)
+
+        # print(dir(selfreactors[2]))
+        # print(self.massFlowFunctions[0])
+        # self.massFlowFunctions[0](1)
         # for mfc in self.massFlowFunctions:
         #     mfc(0)
         # print(self.reactors[2].mass)
@@ -104,22 +108,9 @@ class PlumeModel(object):
         name = 'mdot'
         for i in range(self.nex):
             def mdot(t):
-                # return combustor.mass / residence_time
+                mass = self.reactors[i].mass
+
                 print(i)
-            mdot_code = types.CodeType(1,
-                        mdot.__code__.co_kwonlyargcount,
-                        mdot.__code__.co_nlocals,
-                        mdot.__code__.co_stacksize,
-                        mdot.__code__.co_flags,
-                        mdot.__code__.co_code,
-                        mdot.__code__.co_consts,
-                        mdot.__code__.co_names,
-                        mdot.__code__.co_varnames,
-                        mdot.__code__.co_filename,
-                        name+str(i),
-                        mdot.__code__.co_firstlineno,
-                        mdot.__code__.co_lnotab)
-            self.massFlowFunctions.append(types.FunctionType(mdot_code, mdot.__globals__, name+str(i)))
 
     def connectReactors(self):
         """Use this function to connect exhaust reactors."""
@@ -127,17 +118,23 @@ class PlumeModel(object):
         self.controllers = ct.MassFlowController(self.reactors[0],self.reactors[1],mdot=self.inflow), #Fuel Air Mixture MFC
         #Connecting combustor -> exhaust
         self.controllers += ct.PressureController(self.reactors[1],self.reactors[2],master=self.controllers[0],K=self.pressCoeff), #Exhaust PFC
+        #Creating source/sink attributes with lambdas for reactors
+        self.rCons = [lambda:0 for react in self.reactors ]
+        for react in self.rCons:
+            react.sink = 0
+            react.source = 0
         #Connecting exhausts -> adj exhaust
-        self.rcsums = []
         for f, row in enumerate(self.connects[:-1],2):
-            self.rcsums.append(np.sum(row))
+            self.rCons[f].source += np.sum(row)
             for t,value in enumerate(row[:-1],start=2):
                 if value:
                     self.controllers = ct.MassFlowController(self.reactors[f],self.reactors[t]), #Exhaust MFCS
+                    self.rCons[t].sink += 1
         #entrainment controllers
         for t, value in enumerate(self.connects[-1],2):
             if value:
                 self.controllers = ct.MassFlowController(self.reactors[-1],self.reactors[t],mdot=self.entrainment), #Exhaust MFCS
+                self.rCons[t].sink += 1
 
     def createExecutableModel(self):
         """Use this function to create an executable binary"""
