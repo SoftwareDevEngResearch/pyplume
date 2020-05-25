@@ -69,11 +69,11 @@ class PlumeModel(object):
     def buildNetwork(self):
         """Call this function to build the network."""
         self.createReactors()
-        # self.createMassFlowFunctions()
+        self.createMassFlowFunctions()
         self.connectReactors()
-        for react in self.rCons:
-            print(react.sink)
-            print(react.source)
+        for mfcn in self.massFlowFunctions:
+            print(mfcn(0))
+
 
         # print(dir(selfreactors[2]))
         # print(self.massFlowFunctions[0])
@@ -107,10 +107,11 @@ class PlumeModel(object):
         self.massFlowFunctions = []
         name = 'mdot'
         for i in range(self.nex):
-            def mdot(t):
-                mass = self.reactors[i].mass
-
-                print(i)
+            def mdot(t,self=None):
+                # mass = self.reactors[i].mass
+                return self.x
+            mdot.__defaults__ = (mdot,)
+            self.massFlowFunctions.append(mdot)
 
     def connectReactors(self):
         """Use this function to connect exhaust reactors."""
