@@ -36,7 +36,6 @@ class PlumeModel(object):
         self.entrainment = entrainment #a function that specifies mass entrainment
         self.build = build #This is a bool that says to build on construction
         self.nex = connects.shape[0]-1 #This is the number of exhaust reactors
-
         # Add cantera or mechanisms path
         if setCanteraPath is not None:
             ct.add_directory(setCanteraPath)
@@ -44,10 +43,8 @@ class PlumeModel(object):
             self.mechPath = os.path.dirname(os.path.abspath(__file__))
             self.mechPath = os.path.join(self.mechPath,"mechanisms")
             sys.path.append(self.mechPath)
-
         #Creation of gas objects for reactors
         self.createGases()
-
         #Optionally building network from initialization
         if self.build:
             self.buildNetwork()
@@ -142,7 +139,6 @@ class PlumeModel(object):
         # for i,exhaust in enumerate(self.exhausts):
         #     statement+="\n\nAtmosphere: T: {} K, P: {} Pa\n".format(T,P)
         #     statement+= ", ".join([self.fuel.species_name(i)+":{:0.1f}".format(x) for i,x in enumerate(X)])
-
         return statement
 
     def densePrint(self):
