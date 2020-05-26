@@ -13,7 +13,26 @@ This package can be installed via conda and pip. (UPDATEME)
 ```
 
 ### Model generation tool
-The model generation tool can be implemented with the most functionality in a script but there is also a command line interface. The code works by creating an object which represents a complex reactor network created by Cantera. This reactor network is made up of a two reservoirs, a combustor, and the desired exhaust network. One reservoir is for the fuel/air mixture and another for the atmosphere. The combustor assumes the mechanism of the fuel/air reservoir and the exhaust is the focus of the model which has the most configurable options. The fuel/air reservoir is connected to the combustor via a `MassFlowController` where reaction occurs is fed to the exhaust via a `PressureController`. The exhaust reactors remaining then include entrainment and mass flow via `MassFlowController`. Functions can be specified for inlet mass flow and entrainment mass flow as a function of time. Continuity is then used in a simple manner to control the flow of mass between the exhaust network. This can be controlled to some extent via the adjacency matrix supplied called `connects`.
+The model generation tool can be implemented with the most functionality in a script but there is also a command line interface. The code works by creating an object which represents a complex reactor network created by Cantera. This reactor network is made up of a three reservoirs, a combustor, and the desired exhaust network. One reservoir is for the fuel/air mixture, one is for atmosphere entrainment, and one is for the final exhaust stage. The combustor assumes the mechanism of the fuel/air reservoir and the exhaust is the focus of the model which has the most configurable options. The reactors in the system are connected via multiple `MassFlowController` objects based on an adjacency matrix of connections. The fuel/air reservoir is connected to the combustor with the mass flow function that follows.
+```python
+  def massFlow(t):
+    return combustor.mass/residenceTime
+```
+The mass flow is then maintained to the first exhaust reactor with the same mass flow function to ensure continuity. Successive reactors then evenly divide their mass amongst their sinks as follows.
+```python
+  def mdot(t,fcn=None):
+    return (self.reactors[fcn.ridx].mass / self.residenceTime(t)) / fcn.sink
+```
+Terminal exhaust reactors are connected to an exhaust reservoir by the following mass flow function, which acts as the final stage of the process.
+```python
+  def mdot(t,fcn=None):
+    return (self.reactors[fcn.ridx].mass / self.residenceTime(t))
+```
+
+ where reaction occurs is fed to the exhaust via a `MassFlowController`. The exhaust reactors remaining then include entrainment and mass flow via `MassFlowController`. This is controlled by a specified residence time function as a function of time.
+
+
+0unctions can be specified for inlet mass flow and entrainment mass flow as a function of time. Continuity is then used in a simple manner to control the flow of mass between the exhaust network. This can be controlled to some extent via the adjacency matrix supplied called `connects`.
 
 #### Creating model object
 

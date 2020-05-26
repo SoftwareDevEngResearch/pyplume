@@ -56,6 +56,10 @@ class PlumeModel(object):
         """Use this function to call the object and iterate the reactor through time."""
         self.network.advance(time)
 
+    def steadyState(self):
+        self.network.advance_to_steady_state()
+        return network.get_state()
+
     def buildNetwork(self):
         """Call this function to build the network."""
         self.createReactors() #This function creates reactors
@@ -82,6 +86,7 @@ class PlumeModel(object):
         self.reactors += tuple([ct.ConstPressureReactor(contents=next(exCycle),name='exhaust{}'.format(i),energy='on') for i in range(self.nex)])
         #Creating atomspheric reactor
         self.atmosReservoir = ct.Reservoir(contents=self.atmosphere,name='atmosphere')
+        self.exhaustReservoir = ct.Reservoir(contents=self.atmosphere,name='exhaust')
 
     def connectReactors(self):
         """Use this function to connect exhaust reactors."""
@@ -96,15 +101,27 @@ class PlumeModel(object):
         exStart = 1 #starting index of exhaust reactors
         for f, row in enumerate(self.connects[:-1],exStart):
             sink = np.sum(row) #number of places the mass flow goes from one reactor to another
-            for t,value in enumerate(row[:-1],start=exStart):
-                if value:
-                    #Using a closure to create mass flow function
-                    def mdot(t,fcn=None):
-                        return (self.reactors[0].mass / self.residenceTime(t)) / fcn.sink
-                    mdot.__defaults__ = (mdot,)
-                    mdot.sink = sink #number of places the mass flow goes from one reactor to another
-                    #Create controller
-                    self.controllers += ct.MassFlowController(self.reactors[f],self.reactors[t],mdot=mdot), #Exhaust MFCS
+            if sink != 0: #Connects non-terminal exhaust reactors
+                for t,value in enumerate(row[:-1],start=exStart):
+                    if value:
+                        #Using a closure to create mass flow function
+                        def mdot(t,fcn=None):
+                            return (self.reactors[fcn.ridx].mass / self.residenceTime(t)) / fcn.sink
+                        mdot.__defaults__ = (mdot,)
+                        mdot.sink = sink #number of places the mass flow goes from one reactor to another
+                        mdot.ridx = np.copy(f)
+                        #Create controller
+                        self.controllers += ct.MassFlowController(self.reactors[f],self.reactors[t],mdot=mdot), #Exhaust MFCS
+            else: #This else statement connects all terminal exhaust reactors to exhaust reservoir
+                #Using a closure to create mass flow function
+                def mdot(t,fcn=None):
+                    return (self.reactors[fcn.ridx].mass / self.residenceTime(t))
+                mdot.__defaults__ = (mdot,)
+                mdot.sink = sink #number of places the mass flow goes from one reactor to another
+                mdot.ridx = np.copy(f)
+                #Create controller
+                self.controllers += ct.MassFlowController(self.reactors[f],self.exhaustReservoir,mdot=mdot), #Exhaust MFCS
+
         #entrainment controllers
         for t, value in enumerate(self.connects[-1],exStart):
             if value:
@@ -227,7 +244,7 @@ class PlumeModel(object):
         for i in range(n):
             connects[0,i+1] = 1
         #Fill remaining
-        for i in range(1,clen-n):
+        for i in range(1,clen-n-1):
             connects[i,i+n] = 1
         #Connect farfield
         connects[-1,0] = 1

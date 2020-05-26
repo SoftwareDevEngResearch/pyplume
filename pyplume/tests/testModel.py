@@ -37,7 +37,7 @@ def test_gridModel():
     diag=4
     ones[0,1:diag] = 1
     diagStart = diag
-    for i in range(1,int(n*m-1)):
+    for i in range(1,int(n*m-2)):
         ones[i,diagStart] = 1
         diagStart+=1
     for ext in [0,1,3,4,6,7,9]:
@@ -52,3 +52,5 @@ def test_connectReactors():
 
 def test_createReactors():
     """Use this function to test creation of reactors."""
+
+test_gridModel()
