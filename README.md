@@ -28,11 +28,7 @@ Terminal exhaust reactors are connected to an exhaust reservoir by the following
   def mdot(t,fcn=None):
     return (self.reactors[fcn.ridx].mass / self.residenceTime(t))
 ```
-
- where reaction occurs is fed to the exhaust via a `MassFlowController`. The exhaust reactors remaining then include entrainment and mass flow via `MassFlowController`. This is controlled by a specified residence time function as a function of time.
-
-
-0unctions can be specified for inlet mass flow and entrainment mass flow as a function of time. Continuity is then used in a simple manner to control the flow of mass between the exhaust network. This can be controlled to some extent via the adjacency matrix supplied called `connects`.
+Finally, the entrainment functions are connected to the specified reactors via a provided entrainment function. These functions are ultimately controlled by the residence time function provided. The goal of this connection method was to implement and maintain a simple form of continuity that provided a less well mixed scenario.
 
 #### Creating model object
 
