@@ -183,9 +183,9 @@ class PlumeModel(object):
                 based on the formula:steps=(-1+np.sqrt(1+8*n))/2
 
         Linear expansion model:
-        [fuel res]->[combustor]->[ex1]->[ex2]->[ex4]
-                                      ->[ex3]->[ex5]
-                                             ->[ex6]
+        [fuel res]->[combustor]->[ex1]->[ex2]->[ex4]->[exRes]
+                                      ->[ex3]->[ex5]->[exRes]
+                                             ->[ex6]->[exRes]
         [farfield]->[ex1,ex2,ex3,ex4,ex6]
 
         Notes:
@@ -237,9 +237,9 @@ class PlumeModel(object):
             m - Integer number of reactor columns
 
         Grid model (3x3):
-        [fuel res]->[combustor]->[ex0]->[ex1]->[ex4]->[ex7]
-                                      ->[ex2]->[ex5]->[ex8]
-                                      ->[ex3]->[ex6]->[ex9]
+        [fuel res]->[combustor]->[ex0]->[ex1]->[ex4]->[ex7]->[exRes]
+                                      ->[ex2]->[ex5]->[ex8]->[exRes]
+                                      ->[ex3]->[ex6]->[ex9]->[exRes]
 
         [farfield]->[ex0,ex1,ex7,ex4,ex3,ex6,ex9]
 

@@ -55,6 +55,20 @@ class PlumeModel(object):
         """
 ```
 
+##### Simple model
+```python
+@classmethod
+  def simpleModel(cls,mechs=["gri30.cti","air.cti","gri30.cti"],residenceTime=lambda t: 0.1, entrainment=lambda t:0.1,setCanteraPath=None,build=False):
+      """This classmethod build a 1 reactor exhaust model. It has extra parameters than the class
+      Linear expansion model:
+      [fuel res]->[combustor]->[ex1]->[exRes]
+      [farfield]->[ex1]
+      """
+      n = 1
+      connects = np.zeros((n+1,n+1))
+      connects[1,0] = 1
+      return cls(mechs,connects,residenceTime=residenceTime,entrainment=entrainment,setCanteraPath=setCanteraPath,build=build)
+```
 ##### Linear Expansion Model
 ```python
 @classmethod
@@ -68,9 +82,9 @@ class PlumeModel(object):
               based on the formula:steps=(-1+np.sqrt(1+8*n))/2
 
       Linear expansion model:
-      [fuel res]->[combustor]->[ex1]->[ex2]->[ex4]
-                                    ->[ex3]->[ex5]
-                                           ->[ex6]
+      [fuel res]->[combustor]->[ex1]->[ex2]->[ex4]->[exRes]
+                                    ->[ex3]->[ex5]->[exRes]
+                                           ->[ex6]->[exRes]
       [farfield]->[ex1,ex2,ex3,ex4,ex6]
 
       Notes:
@@ -90,9 +104,9 @@ class PlumeModel(object):
           m - Integer number of reactor columns
 
       Grid model (3x3):
-      [fuel res]->[combustor]->[ex0]->[ex1]->[ex4]->[ex7]
-                                    ->[ex2]->[ex5]->[ex8]
-                                    ->[ex3]->[ex6]->[ex9]
+      [fuel res]->[combustor]->[ex0]->[ex1]->[ex4]->[ex7]->[exRes]
+                                    ->[ex2]->[ex5]->[ex8]->[exRes]
+                                    ->[ex3]->[ex6]->[ex9]->[exRes]
 
       [farfield]->[ex0,ex1,ex7,ex4,ex3,ex6,ex9]
 

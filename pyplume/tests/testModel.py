@@ -47,6 +47,19 @@ def test_gridModel():
         for j in trange:
             assert connects[i,j] == ones[i,j]
 
+def test_simpleModel():
+    """Use this function to test grid model connects matrix."""
+    #Manually check that it produces correct adj matrix otherwise
+    n = m = 3
+    connects = model.PlumeModel.simpleModel(n=n,m=m).connects
+    ones = np.zeros(connects.shape)
+    for i,row in enumerate(connects):
+        for j,val in enumerate(row):
+            if i == 1 and j == 0:
+                assert connects[i,j] == 1
+            else:
+                assert connects[i,j] == 0
+
 def test_connectReactors():
     """Use this function to test the mass flow connections"""
 
