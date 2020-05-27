@@ -55,7 +55,7 @@ class PlumeModel(object):
 
     def steadyState(self):
         self.network.advance_to_steady_state()
-        return network.get_state()
+        return self.network.get_state()
 
     def buildNetwork(self):
         """Call this function to build the network."""
@@ -91,9 +91,9 @@ class PlumeModel(object):
         def inflow(t): # inflow is a variable mass flow rate base on residence time
             return self.reactors[0].mass / self.residenceTime(t)
         self.inflow = inflow
-        self.controllers = ct.MassFlowController(self.fuelReservoir,self.reactors[1],mdot=self.inflow), #Fuel Air Mixture MFC
+        self.controllers = ct.MassFlowController(self.fuelReservoir,self.reactors[0],mdot=self.inflow), #Fuel Air Mixture MFC
         #Connecting combustor -> exhaust
-        self.controllers += ct.MassFlowController(self.reactors[1],self.reactors[2],mdot=self.inflow), #Exhaust MFC
+        self.controllers += ct.MassFlowController(self.reactors[0],self.reactors[1],mdot=self.inflow), #Exhaust MFC
         #Connecting exhausts -> adj exhaust
         exStart = 1 #starting index of exhaust reactors
         for f, row in enumerate(self.connects[:-1],exStart):
@@ -160,6 +160,18 @@ class PlumeModel(object):
         return statement
 
     #Class methods that implement certain kinds of reactor ideas.
+    @classmethod
+    def simpleModel(cls,mechs=["gri30.cti","air.cti","gri30.cti"],residenceTime=lambda t: 0.1, entrainment=lambda t:0.1,setCanteraPath=None,build=False):
+        """This classmethod build a 1 reactor exhaust model. It has extra parameters than the class
+        Linear expansion model:
+        [fuel res]->[combustor]->[ex1]->[exRes]
+        [farfield]->[ex1]
+        """
+        n = 1
+        connects = np.zeros((n+1,n+1))
+        connects[1,0] = 1
+        return cls(mechs,connects,residenceTime=residenceTime,entrainment=entrainment,setCanteraPath=setCanteraPath,build=build)
+
     @classmethod
     def linearExpansionModel(cls,n=10,mechs=["gri30.cti","air.cti","gri30.cti"],residenceTime=lambda t: 0.1, entrainment=lambda t:0.1,setCanteraPath=None,build=False):
         """ Use this function to generate an instance with linear expansion connects method. It takes all the parameters
@@ -250,6 +262,6 @@ class PlumeModel(object):
         return cls(mechs,connects,residenceTime=residenceTime,entrainment=entrainment,setCanteraPath=setCanteraPath,build=build)
 
 if __name__ == "__main__":
-    pm = PlumeModel.linearExpansionModel()
+    pm = PlumeModel.simpleModel()
     pm.buildNetwork()
-    pm(0.1)
+    pm.steadyState()
