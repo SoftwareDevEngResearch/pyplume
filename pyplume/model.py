@@ -9,7 +9,7 @@
 import cantera as ct
 import itertools as it
 import numpy as np
-import sys,os,traceback,types
+import sys,os,traceback,hdf5
 
 
 class PlumeModel(object):
@@ -49,9 +49,13 @@ class PlumeModel(object):
         if self.build:
             self.buildNetwork()
 
-    def __call__(self,time):
+    def __call__(self,time,fname=None):
         """Use this function to call the object and iterate the reactor through time."""
         self.network.advance(time)
+        self.state = self.network.get_state()
+        if fname is not None:
+            self.solutionWrite(fname)
+        return self.state
 
     def steadyState(self):
         self.network.advance_to_steady_state()
@@ -63,6 +67,7 @@ class PlumeModel(object):
         self.connectReactors()  #This function connects reactors with Adj matrxi
         self.network = ct.ReactorNet(self.reactors) #Create reactor network
         self.network.set_initial_time(0) #Set initial reactor time to zero
+        self.initialState = self.network.get_state()
 
     def createGases(self):
         """This function creates gases to be used in building the reactor network.
@@ -158,6 +163,9 @@ class PlumeModel(object):
             statement+= ", ".join([self.fuel.species_name(i)+":{:0.1f}".format(x) for i,x in enumerate(X)])
 
         return statement
+
+    def solutionWrite(self,fname):
+        """Use this function to write the solution to an hdf5 file."""
 
     #Class methods that implement certain kinds of reactor ideas.
     @classmethod
