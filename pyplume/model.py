@@ -9,7 +9,7 @@
 import cantera as ct
 import itertools as it
 import numpy as np
-import sys,os,traceback,hdf5
+import sys,os,traceback,h5py
 
 
 class PlumeModel(object):
@@ -67,6 +67,7 @@ class PlumeModel(object):
         self.connectReactors()  #This function connects reactors with Adj matrxi
         self.network = ct.ReactorNet(self.reactors) #Create reactor network
         self.network.set_initial_time(0) #Set initial reactor time to zero
+        self.network.reinitialize() #Initialize reactor network
         self.initialState = self.network.get_state()
 
     def createGases(self):
@@ -80,6 +81,7 @@ class PlumeModel(object):
     def createReactors(self):
         """Use this function to create exhaust stream network"""
         #Creating fuel reservoir
+        self.fuel.equilibrate('HP')
         self.fuelReservoir = ct.Reservoir(contents=self.fuel,name='fuel')
         #Creating combustor
         self.reactors = ct.ConstPressureReactor(contents=self.fuel,name='combustor',energy='on'),
@@ -164,9 +166,9 @@ class PlumeModel(object):
 
         return statement
 
-    def solutionWrite(self,fname):
+    def solutionWrite(self,fname=None):
         """Use this function to write the solution to an hdf5 file."""
-
+        fname = ""
     #Class methods that implement certain kinds of reactor ideas.
     @classmethod
     def simpleModel(cls,mechs=["gri30.cti","air.cti","gri30.cti"],residenceTime=lambda t: 0.1, entrainment=lambda t:0.1,setCanteraPath=None,build=False):
@@ -272,4 +274,7 @@ class PlumeModel(object):
 if __name__ == "__main__":
     pm = PlumeModel.simpleModel()
     pm.buildNetwork()
-    pm.steadyState()
+    steadyStateVector = pm.steadyState()
+    for i,s in enumerate(steadyStateVector):
+        n = pm.network.component_name(i)
+        print(n,s)
