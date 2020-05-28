@@ -51,7 +51,7 @@ def test_simpleModel():
     """Use this function to test grid model connects matrix."""
     #Manually check that it produces correct adj matrix otherwise
     n = m = 3
-    connects = model.PlumeModel.simpleModel(n=n,m=m).connects
+    connects = model.PlumeModel.simpleModel().connects
     ones = np.zeros(connects.shape)
     for i,row in enumerate(connects):
         for j,val in enumerate(row):
@@ -65,5 +65,3 @@ def test_connectReactors():
 
 def test_createReactors():
     """Use this function to test creation of reactors."""
-
-test_gridModel()
