@@ -9,7 +9,7 @@
 import cantera as ct
 import itertools as it
 import numpy as np
-import sys,os,traceback,h5py,output
+import sys,os,traceback,output
 
 
 class PlumeModel(object):
@@ -37,6 +37,7 @@ class PlumeModel(object):
         self.build = build #This is a bool that says to build on construction
         self.nex = connects.shape[0]-1 #This is the number of exhaust reactors
         self.fpath=fpath
+        self.ptype=True #True for sparse printing
         # Add cantera or mechanisms path
         if setCanteraPath is not None:
             ct.add_directory(setCanteraPath)
@@ -54,7 +55,6 @@ class PlumeModel(object):
         """Use this function to call the object and iterate the reactor through time."""
         self.network.advance(time)
         self.state = self.network.get_state()
-        print(self.writer)
         self.writer(self.state) #Write if file path is provided
         return self.state
 
@@ -79,7 +79,7 @@ class PlumeModel(object):
         self.initialState = self.network.get_state()
         self.keys = [self.network.component_name(i) for i in range(len(self.initialState))]
         #Added h5writer if a file path is specified
-        self.writer = (lambda x:0) if self.fpath is None else output.h5Writer(self.fpath,self.keys)
+        self.writer = (lambda x:0) if self.fpath is None else output.h5Writer(self.fpath,self.keys,self.initialState)
 
     def createGases(self):
         """This function creates gases to be used in building the reactor network.
@@ -144,7 +144,7 @@ class PlumeModel(object):
 
     #Class methods that implement certain kinds of reactor ideas.
     @classmethod
-    def simpleModel(cls,mechs=["gri30.cti","air.cti","gri30.cti"],residenceTime=lambda t: 0.1, entrainment=lambda t:0.1,fpath="simple.hdf",setCanteraPath=None,build=False):
+    def simpleModel(cls,mechs=["gri30.cti","air.cti","gri30.cti"],residenceTime=lambda t: 0.1, entrainment=lambda t:0.1,fpath="simple.hdf5",setCanteraPath=None,build=False):
         """This classmethod build a 1 reactor exhaust model. It has extra parameters than the class
         Linear expansion model:
         [fuel res]->[combustor]->[ex1]->[exRes]
@@ -156,7 +156,7 @@ class PlumeModel(object):
         return cls(mechs,connects,residenceTime=residenceTime,entrainment=entrainment,fpath=fpath,setCanteraPath=setCanteraPath,build=build)
 
     @classmethod
-    def linearExpansionModel(cls,n=10,mechs=["gri30.cti","air.cti","gri30.cti"],residenceTime=lambda t: 0.1, entrainment=lambda t:0.1,fpath="linear.hdf",setCanteraPath=None,build=False):
+    def linearExpansionModel(cls,n=10,mechs=["gri30.cti","air.cti","gri30.cti"],residenceTime=lambda t: 0.1, entrainment=lambda t:0.1,fpath="linear.hdf5",setCanteraPath=None,build=False):
         """ Use this function to generate an instance with linear expansion connects method. It takes all the parameters
             that the class does except connects and replaces connects with n parameter.
 
@@ -211,7 +211,7 @@ class PlumeModel(object):
         return cls(mechs,connects,residenceTime=residenceTime,entrainment=entrainment,fpath=fpath,setCanteraPath=setCanteraPath,build=build)
 
     @classmethod
-    def gridModel(cls,n=3,m=3,mechs=["gri30.cti","air.cti","gri30.cti"],residenceTime=lambda t: 0.1, entrainment=lambda t:0.1,fpath="grid.hdf",setCanteraPath=None,build=False):
+    def gridModel(cls,n=3,m=3,mechs=["gri30.cti","air.cti","gri30.cti"],residenceTime=lambda t: 0.1, entrainment=lambda t:0.1,fpath="grid.hdf5",setCanteraPath=None,build=False):
         """ Use this function to generate an instance with grid connects method. It takes all the parameters
             that the class does except connects and replaces connects with n parameter.
 
@@ -247,8 +247,5 @@ class PlumeModel(object):
 if __name__ == "__main__":
     pm = PlumeModel.simpleModel()
     pm.buildNetwork()
-    pm(1)
-    # steadyStateVector = pm.steadyState()
-    # for i,s in enumerate(steadyStateVector):
-    #     n = pm.network.component_name(i)
-    #     print(n,s)
+    for i in np.arange(0,0.1,0.01):
+        pm(i)
