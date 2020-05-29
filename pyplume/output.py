@@ -1,41 +1,47 @@
 import h5py
 import numpy as np
 
+def statementTVM(pReact):
+    """Use this funciton to produce the TVM statemet"""
+    T,V,mass = pReact.T,pReact.volume,pReact.mass
+    statement="\n{}: T: {:0.2f} K, V: {:0.2f} m^3, mass: {:0.2f} kg".format(pReact.name,T,V,mass)
+    return statement
 #Printing methods
 def sparsePrint(plume):
     """This overloads the print function."""
-    statement = 'PyPlume Network Model:\n'
-    T,P,X = plume.fuel.TPX
-
-    statement+="\nCombustor: T: {} K, P: {} Pa\n".format(T,P)
-    statement+= ", ".join([plume.fuel.species_name(i)+":{:0.1f}".format(x) for i,x in enumerate(X)])
-
-    T,P,X = plume.atmosphere.TPX
-    statement+="\n\nAtmosphere: T: {} K, P: {} Pa\n".format(T,P)
-    statement+= ", ".join([plume.fuel.species_name(i)+":{:0.1f}".format(x) for i,x in enumerate(X)])
-
-    # for i,exhaust in enumerate(plume.exhausts):
-    #     statement+="\n\nAtmosphere: T: {} K, P: {} Pa\n".format(T,P)
-    #     statement+= ", ".join([plume.fuel.species_name(i)+":{:0.1f}".format(x) for i,x in enumerate(X)])
+    statement = 'PyPlume Network Model Summary:'
+    statement += statementTVM(plume.fuelReservoir)
+    statement += statementTVM(plume.atmosReservoir)
+    for react in plume.reactors:
+        statement += statementTVM(react)
+    statement += statementTVM(plume.exhaustReservoir)
     return statement
 
 def densePrint(plume):
     """This overloads the print function."""
-    statement = 'PyPlume Network Model:\n'
-    T,P,X = plume.fuel.TPX
+    statement = 'PyPlume Network Model Summary:'
+    statement += statementTVM(plume.fuelReservoir)
+    statement += statementTVM(plume.atmosReservoir)
 
-    statement+="\nCombustor: T: {} K, P: {} Pa\n".format(T,P)
-    statement+= ", ".join([plume.fuel.species_name(i)+":{:0.1f}".format(x) for i,x in enumerate(X)])
+    for react in plume.reactors:
+        statement += statementTVM(react)
+    statement += statementTVM(plume.exhaustReservoir)
+    statement += '\nReactor Network Mass Fractions:'
+    keys = []
+    added = []
+    state=plume.network.get_state()
 
-    T,P,X = plume.atmosphere.TPX
-    statement+="\n\nAtmosphere: T: {} K, P: {} Pa\n".format(T,P)
-    statement+= ", ".join([plume.fuel.species_name(i)+":{:0.1f}".format(x) for i,x in enumerate(X)])
+    for i in range(len(state)):
+        name = plume.network.component_name(i)
+        keys.append(name)
 
-    for i,exhaust in enumerate(plume.exhausts):
-        statement+="\n\nAtmosphere: T: {} K, P: {} Pa\n".format(T,P)
-        statement+= ", ".join([plume.fuel.species_name(i)+":{:0.1f}".format(x) for i,x in enumerate(X)])
+    for i,key in enumerate(keys):
+        keyname,element = key.split(":")
+        if keyname not in added:
+            added.append(keyname)
+            statement+="\n{}\n".format(keyname)
+        statement+="{}: {:0.2e}, ".format(element,state[i])
     return statement
-
 #External methods to writer class
 
 def stringToOrd(strList):
@@ -94,7 +100,8 @@ class h5Writer(object):
 
     def __del__(self):
         """This is the h5Writer destructor."""
-        self.f.close() #Close file on destruction
+        # self.f.close() #Close file on destruction
+        pass
 
     def createSlices(self):
         """Use this function to create index slices."""
@@ -147,7 +154,10 @@ class h5Writer(object):
 
     @classmethod
     def existingFile(cls,fpath):
-        """Use this to generate a writer for an existing file."""
+        """Use this to generate a writer for an existing file.
+        Parameters:
+        fpath - path to existing hdf5 file.
+        """
         f = h5py.File(fpath,'r+')
         args = fpath,ordToString(list(f['keys'])),np.zeros(f['dshape'])
         vars = f['time'],f['chunk'],f['slices'],f['dshape']
@@ -155,5 +165,6 @@ class h5Writer(object):
         h5w = cls(*args)
         h5w.setVars(*vars)
         return h5w
+
 if __name__ == "__main__":
     h5Writer.existingFile("simple.hdf5")

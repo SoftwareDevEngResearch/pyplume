@@ -61,13 +61,15 @@ class PlumeModel(object):
     def __str__(self):
         """This overloads the print function."""
         if self.ptype:
-            output.sparsePrint(self)
+            return output.sparsePrint(self)
         else:
-            output.densePrint(self)
+            return output.densePrint(self)
 
     def steadyState(self):
         self.network.advance_to_steady_state()
-        return self.network.get_state()
+        self.state = self.network.get_state()
+        self.writer(self.state) #Write if file path is provided
+        return self.state
 
     def buildNetwork(self):
         """Call this function to build the network."""
@@ -247,5 +249,6 @@ class PlumeModel(object):
 if __name__ == "__main__":
     pm = PlumeModel.simpleModel()
     pm.buildNetwork()
-    for i in np.arange(0,0.1,0.01):
-        pm(i)
+    pm.steadyState()
+    pm.ptype=False
+    print(pm)
