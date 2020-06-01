@@ -207,7 +207,7 @@ exhaust0: T: 300.00 K, V: 1.01 m^3, mass: 0.09 kg
 exhaust: T: 300.00 K, V: 1.00 m^3, mass: 1.18 kg
 Reactor Network Mass Fractions:
 ```
-If you want to generate the file then manage seperately, the `h5Writer` class can be used for this purpose.
+If you want to generate the file then manage it separately, the `h5Writer` class can be used for this purpose.
 ```python
   import output,numpy
   h5w=output.h5Writer.existingFile('simple.hdf5')
@@ -217,15 +217,61 @@ If you want to generate the file then manage seperately, the `h5Writer` class ca
 
 ##### On the command line
 
----Not yet Implemented---
-<!-- Working on this -->
+The command line is currently only set up to run class method models. This can be with `pyplume.model chosenModel`.
+
+```shell
+usage: pyplume.model [-h] [-ss] [-t0 [T0]] [-tf [TF]] [-dt [DT]] [-t] [-v]
+                     {simple,grid,linear}
+
+This is the commandline interface for running an exhuast network.
+
+
+positional arguments:
+  {simple,grid,linear}  This is a required arguement that specifies the model
+                        which will be used. Currently implemented choices are
+                        simple, grid, and linear.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -ss, --steady         set this flag run to steady state after integration
+  -t0 [T0]              Initial integration time
+  -tf [TF]              Final integration time
+  -dt [DT]              Integration time interval
+  -t, --test            set this flag to run test functions.
+  -v, --verbose         set this flag to run print statements during the process.
+```
+
+An example of this is
+```shell
+  pyplume.model simple -v -ss -t
+```
+which runs the `simple` model with the `--verbose, --steady, and --test` options.
+This produces
+```
+Creating simple model and building network.
+Advancing to time: 0.000.
+Advancing to time: 0.100.
+.
+.
+Advancing to time: 0.900.
+Advancing to time: 1.000.
+Advancing to steady state.
+Running model test suite.
+========================================================= test session starts ==========================================================
+platform linux -- Python 3.6.10, pytest-5.4.1, py-1.8.1, pluggy-0.13.1 -- /home/sokato/miniconda3/envs/pyplume/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sokato
+collected 5 items
+
+../../miniconda3/envs/pyplume/lib/python3.6/site-packages/pyplume/tests/testModel.py::test_linearExpansionModel PASSED           [ 20%]
+.
+.
+```
 
 ### Plotting
-
 The methods for plotting the generated data are contained in the an `hdf5` or in script are found in `pyplume.figs`
 
 ### Statistical methods
-
 The methods for plotting the generated data are contained in the an `hdf5` or in script are found in `pyplume.stats`
 
 ### Testing

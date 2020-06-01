@@ -255,7 +255,7 @@ def modelCLI():
     fmap = {'simple' : PlumeModel.simpleModel,
                     'grid' : PlumeModel.gridModel,
                     "linear":PlumeModel.linearExpansionModel}
-    parser.add_argument('network', choices=fmap.keys())
+    parser.add_argument('network', choices=fmap.keys(),help="This is a required arguement that specifies the model which will be used. Currently implemented choices are simple, grid, and linear.")
     parser.add_argument("-ss","--steady",action='store_true',help="""set this flag run to steady state after integration""")
     parser.add_argument("-t0",nargs="?",default=0,type=float,help="Initial integration time")
     parser.add_argument("-tf",nargs="?",default=1,type=float,help="Final integration time")

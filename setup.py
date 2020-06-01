@@ -5,7 +5,7 @@ with open("README.md", encoding='utf-8') as fh:
 
 setuptools.setup(
     name="pyplume",
-    version="0.1.1",
+    version="0.1.2",
     author="Anthony Walker",
     author_email="walkanth@oregonstate.edu",
     license='BSD 3-clause "New" or "Revised License"',
