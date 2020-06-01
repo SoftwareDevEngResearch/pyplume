@@ -9,7 +9,7 @@
 import cantera as ct
 import itertools as it
 import numpy as np
-import sys,os,traceback,output
+import sys,os,traceback,output,argparse
 import pyplume.tests.testModel
 
 class PlumeModel(object):
@@ -259,22 +259,30 @@ def modelCLI():
     parser.add_argument("-ss","--steady",action='store_true',help="""set this flag run to steady state after integration""")
     parser.add_argument("-t0",nargs="?",default=0,type=float,help="Initial integration time")
     parser.add_argument("-tf",nargs="?",default=1,type=float,help="Final integration time")
-    parser.add_argument("-dt",nargs="?",default=0.05,type=float,help="Integration time interval")
+    parser.add_argument("-dt",nargs="?",default=0.1,type=float,help="Integration time interval")
     parser.add_argument("-t","--test",action='store_true',help="""set this flag to run test functions.""")
-    args = parser.parse_args()
+    parser.add_argument("-v","--verbose",action='store_true',help="""set this flag to run print statements during the process.""")
 
+    args = parser.parse_args()
+    if args.verbose:
+        print("Creating {} model and building network.".format(args.network))
     pm = fmap[args.network]()
+    pm.buildNetwork()
 
     for t in np.arange(args.t0,args.tf+args.dt,args.dt):
+        if args.verbose:
+            print("Advancing to time: {:0.3f}.".format(t))
         pm(t)
 
     if args.steady:
+        if args.verbose:
+            print("Advancing to steady state.")
         pm.steadyState()
 
     if args.test:
+        if args.verbose:
+            print("Running model test suite.")
         pyplume.tests.testModel.runTests()
 
 if __name__ == "__main__":
-    pm = PlumeModel.simpleModel()
-    pm.buildNetwork()
-    pm.steadyState()
+    modelCLI()

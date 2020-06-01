@@ -7,7 +7,7 @@ __pycache__/
 
 #my script
 reinstall_script.sh
-
+build-test
 # C extensions
 *.so
 

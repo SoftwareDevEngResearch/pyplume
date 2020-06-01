@@ -5,7 +5,7 @@ with open("README.md", encoding='utf-8') as fh:
 
 setuptools.setup(
     name="pyplume",
-    version="0.0.3",
+    version="0.1.1",
     author="Anthony Walker",
     author_email="walkanth@oregonstate.edu",
     license='BSD 3-clause "New" or "Revised License"',
@@ -16,8 +16,7 @@ setuptools.setup(
     entry_points={
         'console_scripts': [
             'pyplume.mech=pyplume.mech:mechCLI',
-            'pyplume.model:=pyplume.model.modelCLI'
-
+            'pyplume.model=pyplume.model:modelCLI'
         ]
     },
     packages=setuptools.find_packages(),
