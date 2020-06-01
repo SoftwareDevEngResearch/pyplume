@@ -75,6 +75,7 @@ class h5Writer(object):
         self.f = h5py.File(fpath,'w')
         self.chunk = chunk
         self.dshape = [self.chunk,np.shape(initial)[0]]
+        self.elements = [key.split(":")[1][1:] for key in self.keys]
         self.keys = [key.split(":")[0] for key in self.keys]
         self.createSlices()
         self.createDataSets()
@@ -130,6 +131,7 @@ class h5Writer(object):
         #Adding keys
         tkeys=stringToOrd(self.keys)
         self.f.create_dataset('keys', np.shape(tkeys), dtype=int,data=tkeys)
+        print(self.elements)
         #Adding ukeys
         tkeys=stringToOrd(self.ukeys)
         self.f.create_dataset('ukeys', np.shape(tkeys), dtype=int,data=tkeys)
@@ -144,6 +146,7 @@ class h5Writer(object):
         ttime = [ self.time[key] for key in self.time]
         self.f.create_dataset('time',(len(self.time),),dtype=int,data=ttime)
         self.f.create_dataset('dshape',(len(self.dshape),),dtype=int,data=self.dshape)
+        print("Add keys here")
 
     def setVars(self,time,chunk,slices,dshape):
         """This function is used by existingFile to set varibales for consistency."""

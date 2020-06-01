@@ -250,5 +250,3 @@ if __name__ == "__main__":
     pm = PlumeModel.simpleModel()
     pm.buildNetwork()
     pm.steadyState()
-    pm.ptype=False
-    print(pm)
