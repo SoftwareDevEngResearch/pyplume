@@ -75,7 +75,7 @@ class h5Writer(object):
         self.f = h5py.File(fpath,'w')
         self.chunk = chunk
         self.dshape = [self.chunk,np.shape(initial)[0]]
-        self.elements = [key.split(":")[1][1:] for key in self.keys]
+        self.elements = {key.split(":")[1][1:]:i for i,key in enumerate(self.keys)}
         self.keys = [key.split(":")[0] for key in self.keys]
         self.createSlices()
         self.createDataSets()

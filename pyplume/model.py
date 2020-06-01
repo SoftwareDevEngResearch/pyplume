@@ -285,4 +285,9 @@ def modelCLI():
         pyplume.tests.testModel.runTests()
 
 if __name__ == "__main__":
-    modelCLI()
+    # modelCLI()
+    pm = PlumeModel.simpleModel()
+    pm.buildNetwork()
+    for t in np.arange(0,1,0.1):
+        pm(t)
+    
