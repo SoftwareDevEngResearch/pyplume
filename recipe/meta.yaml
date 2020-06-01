@@ -11,6 +11,13 @@ source:
   # git_url: https://github.com/SoftwareDevEngResearch/pyplume.git
   # git_rev: 1.1.4
   # git_depth: 1 # (Defaults to -1/not shallow)
+
+channels:
+  - cantera
+  - anaconda
+  - conda-forge
+  - anthony-walker
+
 build:
   number: 0
   entry_points:
@@ -51,7 +58,8 @@ about:
   summary: "This package contains files to build models for exhaust plume analysis and methods to analyze the results."
   doc_url: "https://pypi.org/project/pyplume/"
   dev_url: "https://github.com/SoftwareDevEngResearch/pyplume"
-
+  description: """PyPlume is a package that relies primarily on Cantera to simulate exhaust plume networks and analyze the resulting data. It has a few different
+  models currently implemented."""
 extra:
   recipe-maintainers:
     - anthony-walker

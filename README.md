@@ -2,10 +2,11 @@
 This package is intended to build reactor network models for exhaust plumes based on user input and incorporate some methods for analysis of the results.
 
 ### Installation
-This package can be installed via [conda](https://anaconda.org/anthony-walker/pyplume) and [pip](https://pypi.org/project/pyplume/).
+This package can be installed via [conda](https://anaconda.org/anthony-walker/pyplume) and [pip](https://pypi.org/project/pyplume/). This package relies on [Cantera](https://cantera.org/) so the `cantera` should be included in the install statement if it is not added to your conda channels.
 
 ```bash
   conda install -c anthony-walker pyplume
+  conda install -c anthony-walker -c cantera pyplume
 ```
 
 ```bash
