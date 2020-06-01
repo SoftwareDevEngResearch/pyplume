@@ -10,7 +10,7 @@ import cantera as ct
 import itertools as it
 import numpy as np
 import sys,os,traceback,output
-
+import pyplume.tests.testModel
 
 class PlumeModel(object):
     """PlumeModel class is used to generate a reactor network for modeling exhaust plume"""
@@ -245,6 +245,34 @@ class PlumeModel(object):
             connects[-1,i]=1
             connects[-1,i+n-1]=1
         return cls(mechs,connects,residenceTime=residenceTime,entrainment=entrainment,fpath=fpath,setCanteraPath=setCanteraPath,build=build)
+
+def modelCLI():
+    """This function is used for the command line interface option of mech"""
+    parser = argparse.ArgumentParser(description="""This is the commandline interface for
+    running an exhuast network.
+    """)
+
+    fmap = {'simple' : PlumeModel.simpleModel,
+                    'grid' : PlumeModel.gridModel,
+                    "linear":PlumeModel.linearExpansionModel}
+    parser.add_argument('network', choices=fmap.keys())
+    parser.add_argument("-ss","--steady",action='store_true',help="""set this flag run to steady state after integration""")
+    parser.add_argument("-t0",nargs="?",default=0,type=float,help="Initial integration time")
+    parser.add_argument("-tf",nargs="?",default=1,type=float,help="Final integration time")
+    parser.add_argument("-dt",nargs="?",default=0.05,type=float,help="Integration time interval")
+    parser.add_argument("-t","--test",action='store_true',help="""set this flag to run test functions.""")
+    args = parser.parse_args()
+
+    pm = fmap[args.network]()
+
+    for t in np.arange(args.t0,args.tf+args.dt,args.dt):
+        pm(t)
+
+    if args.steady:
+        pm.steadyState()
+
+    if args.test:
+        pyplume.tests.testModel.runTests()
 
 if __name__ == "__main__":
     pm = PlumeModel.simpleModel()

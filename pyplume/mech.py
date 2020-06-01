@@ -83,7 +83,7 @@ def mechCLI():
         mechFileList()
 
     if args.test:
-        pyplume.tests.testMechs.CLI()
+        pyplume.tests.testMechs.runTests()
 
 if __name__ == "__main__":
     mechCLI()

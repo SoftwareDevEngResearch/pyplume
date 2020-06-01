@@ -131,7 +131,7 @@ class h5Writer(object):
         #Adding keys
         tkeys=stringToOrd(self.keys)
         self.f.create_dataset('keys', np.shape(tkeys), dtype=int,data=tkeys)
-        print(self.elements)
+        # print(self.elements)
         #Adding ukeys
         tkeys=stringToOrd(self.ukeys)
         self.f.create_dataset('ukeys', np.shape(tkeys), dtype=int,data=tkeys)
@@ -146,7 +146,7 @@ class h5Writer(object):
         ttime = [ self.time[key] for key in self.time]
         self.f.create_dataset('time',(len(self.time),),dtype=int,data=ttime)
         self.f.create_dataset('dshape',(len(self.dshape),),dtype=int,data=self.dshape)
-        print("Add keys here")
+        # print("Add keys here")
 
     def setVars(self,time,chunk,slices,dshape):
         """This function is used by existingFile to set varibales for consistency."""
