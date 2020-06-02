@@ -5,7 +5,7 @@ with open("README.md", encoding='utf-8') as fh:
 
 setuptools.setup(
     name="pyplume",
-    version="0.0.1",
+    version="0.0.2",
     author="Anthony Walker",
     author_email="walkanth@oregonstate.edu",
     license='BSD 3-clause "New" or "Revised License"',
@@ -16,7 +16,9 @@ setuptools.setup(
     entry_points={
         'console_scripts': [
             'pyplume.mech=pyplume.mech:mechCLI',
-            'pyplume.model=pyplume.model:modelCLI'
+            'pyplume.model=pyplume.model:modelCLI',
+            'pyplume.figs=pyplume.figs:figsCLI',
+            'pyplume.stats=pyplume.stats:statsCLI',
         ]
     },
     packages=setuptools.find_packages(),
@@ -28,5 +30,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
-    install_requires=['pytest','cantera','h5py']
+    install_requires=['pytest','cantera','h5py','matplotlib']
 )

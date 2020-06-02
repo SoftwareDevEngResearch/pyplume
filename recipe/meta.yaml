@@ -1,5 +1,5 @@
 {% set name = "pyplume" %}
-{% set version = "0.0.1" %}
+{% set version = "0.0.2" %}
 
 package:
   name: "{{ name|lower }}"
@@ -7,7 +7,7 @@ package:
 
 source:
   url: "https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz"
-  sha256: 421e56272058007ed97623b9d655718c1f009084557274674a5699554970ad9a
+  sha256: 88b546ed5492c3c7f4f7eb3a3b2366a0844df2fe7c0771ff0200ef5386ef4df6
   # git_url: https://github.com/SoftwareDevEngResearch/pyplume.git
   # git_rev: 1.1.4
   # git_depth: 1 # (Defaults to -1/not shallow)
@@ -23,18 +23,22 @@ build:
   entry_points:
     - pyplume.mech=pyplume.mech:mechCLI
     - pyplume.model=pyplume.model:modelCLI
+    - pyplume.figs=pyplume.figs:figsCLI
+    - pyplume.stats=pyplume.stats:statsCLI
   script: "{{ PYTHON }} -m pip install . -vv"
 
 requirements:
   host:
     - cantera
     - h5py
+    - matplotlib
     - pip
     - pytest
     - python
   run:
     - cantera
     - h5py
+    - matplotlib
     - pytest
     - python
 
@@ -50,6 +54,8 @@ test:
   commands:
     - pyplume.mech --help
     - pyplume.model --help
+    - pyplume.figs --help
+    - pyplume.stats --help
 
 about:
   home: "https://github.com/SoftwareDevEngResearch/plume-generation-and-analysis"
@@ -58,8 +64,8 @@ about:
   summary: "This package contains files to build models for exhaust plume analysis and methods to analyze the results."
   doc_url: "https://pypi.org/project/pyplume/"
   dev_url: "https://github.com/SoftwareDevEngResearch/pyplume"
-  description: """PyPlume is a package that relies primarily on Cantera to simulate exhaust plume networks and analyze the resulting data. It has a few different
-  models currently implemented."""
+  description: "PyPlume is a package that relies primarily on Cantera to simulate exhaust plume networks and analyze the resulting data. It has a few different
+  models currently implemented."
 extra:
   recipe-maintainers:
     - anthony-walker
