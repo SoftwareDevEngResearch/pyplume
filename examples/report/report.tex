@@ -7,43 +7,83 @@
 
 \smartqed
 
-\journalname{Journal of Supercomputing}
-
+\journalname{}
 % better printing of numbers
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[english]{babel}
 \usepackage{textcomp}
 \usepackage{booktabs,multicol}
-
 \usepackage[hyphens]{url}
-
-%\usepackage[sort&compress, square, comma]{natbib}
 \usepackage[breaklinks=true, linkcolor=blue, citecolor=blue, colorlinks=true]{hyperref}
-
 \usepackage{latexsym, amsmath, amssymb}
 \usepackage{graphicx, wrapfig, subcaption}
 \usepackage{color}
 \usepackage[pdftex,usenames,dvipsnames,changebar]{xcolor}
 \usepackage[xcolor]{changebar}
 \usepackage{listings}
-\usepackage{nicefrac}
 \usepackage[shortlabels]{enumitem}
 \usepackage[binary-units]{siunitx}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% ADDING LINENUMBERS FOR REVIEWING:
-\usepackage{lineno}
 
-\sisetup{group-separator={,},
-	detect-all,
-	binary-units,
-	list-units = single,
-	range-units = single,
-	range-phrase = --,
-	per-mode = symbol-or-fraction,
-	separate-uncertainty = true,
-	multi-part-units = single,
-	list-final-separator = {, and }
-%    scientific-notation = fixed
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{ %
+  language=C,
+  breaklines=true,
+  columns=flexible,
+  basicstyle=\tiny \ttfamily,
+  backgroundcolor=\color{white},
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  frame=single,
+  tabsize=2,
+  captionpos=b,
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
 }
+
+\graphicspath{ {examples/report/figures/} }
+
+
+\begin{document}
+
+
+\title{Modeling atmospheric chemistry using Cantera reactor networks.}
+
+\titlerunning{Modeling atmospheric chemistry using Cantera reactor networks.}
+
+\author{Anthony S.~Walker}
+
+\institute{A.~Walker \at
+           School of Mechanical, Industrial, and Manufacturing Engineering, Oregon State University, Corvallis, OR, USA \\
+           \email{kyle.niemeyer@oregonstate.edu}
+}
+
+\date{Received: date / Accepted: date}
+
+\maketitle 
+
+% We present recent work on the swept rule, a domain decomposition strategy for explicit solutions to partial differential equations, on heterogeneous, distributed architectures, in particular those commonly found on compute clusters containing GPGPU accelerators.
+\begin{abstract}
+\texttt{PyPlume} is a software developed for the purpose of atmospheric modeling. The software focuses on building complicated reactor networks to more practically simulate atmospheric chemistry. 
+\end{abstract}
+
+
+\section{Introduction}
+
+\begin{acknowledgements}
+
+\end{acknowledgements}
+
+\appendix
+
+
+% \bibliographystyle{plainurl}
+% \bibliography{paper-heterogeneous-swept}
+
+\end{document}
