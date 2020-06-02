@@ -1,0 +1,49 @@
+%
+\pdfoutput=1
+\pdfminorversion=5 % necessary for EES
+%
+%\documentclass[12pt,number,sort&compress,preprint,review]{elsarticle}
+\documentclass[smallextended,referee]{svjour3}
+
+\smartqed
+
+\journalname{Journal of Supercomputing}
+
+% better printing of numbers
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{textcomp}
+\usepackage{booktabs,multicol}
+
+\usepackage[hyphens]{url}
+
+%\usepackage[sort&compress, square, comma]{natbib}
+\usepackage[breaklinks=true, linkcolor=blue, citecolor=blue, colorlinks=true]{hyperref}
+
+\usepackage{latexsym, amsmath, amssymb}
+\usepackage{graphicx, wrapfig, subcaption}
+\usepackage{color}
+\usepackage[pdftex,usenames,dvipsnames,changebar]{xcolor}
+\usepackage[xcolor]{changebar}
+\usepackage{listings}
+\usepackage{nicefrac}
+\usepackage[shortlabels]{enumitem}
+\usepackage[binary-units]{siunitx}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ADDING LINENUMBERS FOR REVIEWING:
+\usepackage{lineno}
+
+\sisetup{group-separator={,},
+	detect-all,
+	binary-units,
+	list-units = single,
+	range-units = single,
+	range-phrase = --,
+	per-mode = symbol-or-fraction,
+	separate-uncertainty = true,
+	multi-part-units = single,
+	list-final-separator = {, and }
+%    scientific-notation = fixed
+}
