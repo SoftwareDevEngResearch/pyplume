@@ -9,24 +9,26 @@
 import cantera as ct
 import itertools as it
 import numpy as np
-import sys,os,traceback,output
-
+import sys,os,traceback,output,argparse
+import pyplume.tests.testModel
 
 class PlumeModel(object):
     """PlumeModel class is used to generate a reactor network for modeling exhaust plume"""
 
     def __init__(self, mechs, connects, residenceTime=lambda t: 0.1, entrainment=lambda t:0.1,fpath=None,setCanteraPath=None,build=False):
-        """constructor for plume model.
+        """
+        PyPlume PlumeModel constructor.
         Parameters:
         mechs - an array like structure with at least 3 mechanisms, [fuelMech,atmMech,eMech1,eMech2,...,eMechN]
-        residenceTime - a function that specifies the residence time as a function of time---this is used to determine combustor and system mass flow rates.
+        residenceTime - a function that specifies the residence time as a function of time---for combustor and system mass flow rates.
         entrainment - a function that specifies entrainment mass as a function of time.
         connects - an 2d adjacency matrix with integer values corresponding to the appropriate mass flow function+1 in the list of mass flow functions.
                     So, the first mass flow function, 0 index, will be represented as 1 in the matrix. This is because these values will be used for conditionals
                     as well. A template matrix can be generated. The matrix should specifically
+        fpath -  file path where the output will be written (hdf5 format).
         setCanteraPath - path variable to cantera mech files
         build -  boolean that builds network strictly from configuration in mechanism files (T,P) if true.
-            default: build=false
+                 default: build=false
         """
         super(PlumeModel, self).__init__()
         #Saving contents into self of inputs
@@ -55,7 +57,7 @@ class PlumeModel(object):
         """Use this function to call the object and iterate the reactor through time."""
         self.network.advance(time)
         self.state = self.network.get_state()
-        self.writer(self.state) #Write if file path is provided
+        self.writer(self.state,time) #Write if file path is provided
         return self.state
 
     def __str__(self):
@@ -68,7 +70,7 @@ class PlumeModel(object):
     def steadyState(self):
         self.network.advance_to_steady_state()
         self.state = self.network.get_state()
-        self.writer(self.state) #Write if file path is provided
+        self.writer(self.state,self.network.time) #Write if file path is provided
         return self.state
 
     def buildNetwork(self):
@@ -147,8 +149,11 @@ class PlumeModel(object):
     #Class methods that implement certain kinds of reactor ideas.
     @classmethod
     def simpleModel(cls,mechs=["gri30.cti","air.cti","gri30.cti"],residenceTime=lambda t: 0.1, entrainment=lambda t:0.1,fpath="simple.hdf5",setCanteraPath=None,build=False):
-        """This classmethod build a 1 reactor exhaust model. It has extra parameters than the class
-        Linear expansion model:
+        """
+        Simple model:
+        This classmethod builds a 1 reactor exhaust model.
+
+        Network:
         [fuel res]->[combustor]->[ex1]->[exRes]
         [farfield]->[ex1]
         """
@@ -159,15 +164,17 @@ class PlumeModel(object):
 
     @classmethod
     def linearExpansionModel(cls,n=10,mechs=["gri30.cti","air.cti","gri30.cti"],residenceTime=lambda t: 0.1, entrainment=lambda t:0.1,fpath="linear.hdf5",setCanteraPath=None,build=False):
-        """ Use this function to generate an instance with linear expansion connects method. It takes all the parameters
-            that the class does except connects and replaces connects with n parameter.
+        """
+        Linear Expansion Model:
+        Use this function to generate an instance with linear expansion connects method. It takes all the parameters
+        that the class does except connects and replaces connects with n parameter.
 
         Parameters:
             n - number of reactors using linear expansion. e.g. at level 1 there is one reactor
                 at level two there are two and so on. n must result in an integer number of steps
                 based on the formula:steps=(-1+np.sqrt(1+8*n))/2
 
-        Linear expansion model:
+        Network:
         [fuel res]->[combustor]->[ex1]->[ex2]->[ex4]->[exRes]
                                       ->[ex3]->[ex5]->[exRes]
                                              ->[ex6]->[exRes]
@@ -214,19 +221,21 @@ class PlumeModel(object):
 
     @classmethod
     def gridModel(cls,n=3,m=3,mechs=["gri30.cti","air.cti","gri30.cti"],residenceTime=lambda t: 0.1, entrainment=lambda t:0.1,fpath="grid.hdf5",setCanteraPath=None,build=False):
-        """ Use this function to generate an instance with grid connects method. It takes all the parameters
-            that the class does except connects and replaces connects with n parameter.
+        """
+        Grid model:
+        Use this function to generate an instance with grid connects method. It takes all the parameters
+        that the class does except connects and replaces connects with n parameter.
 
         Parameters:
             n - Integer number of reactor rows
             m - Integer number of reactor columns
 
-        Grid model (3x3):
-        [fuel res]->[combustor]->[ex0]->[ex1]->[ex4]->[ex7]->[exRes]
-                                      ->[ex2]->[ex5]->[ex8]->[exRes]
+        Network:
+        [fuel res]->[combustor]->[ex1]->[ex2]->[ex5]->[ex8]->[exRes]
                                       ->[ex3]->[ex6]->[ex9]->[exRes]
+                                      ->[ex4]->[ex7]->[ex10]->[exRes]
 
-        [farfield]->[ex0,ex1,ex7,ex4,ex3,ex6,ex9]
+        [farfield]->[ex1,ex2,ex4,ex5,ex7,ex8,ex10]
 
         Notes:
         The farfield is connected as an inlet for each exterior reactor if you were to draw them as 2D blocks.
@@ -246,9 +255,48 @@ class PlumeModel(object):
             connects[-1,i+n-1]=1
         return cls(mechs,connects,residenceTime=residenceTime,entrainment=entrainment,fpath=fpath,setCanteraPath=setCanteraPath,build=build)
 
+def modelCLI():
+    """This function is used for the command line interface option of mech"""
+    parser = argparse.ArgumentParser(description="""This is the commandline interface for
+    running an exhaust network.
+    """)
+
+    fmap = {'simple' : PlumeModel.simpleModel,
+                    'grid' : PlumeModel.gridModel,
+                    "linear":PlumeModel.linearExpansionModel}
+    parser.add_argument('network', choices=fmap.keys(),help="This is a required arguement that specifies the model which will be used. Currently implemented choices are simple, grid, and linear.")
+    parser.add_argument("-ss","--steady",action='store_true',help="""set this flag run to steady state after integration""")
+    parser.add_argument("-t0",nargs="?",default=0,type=float,help="Initial integration time")
+    parser.add_argument("-tf",nargs="?",default=1,type=float,help="Final integration time")
+    parser.add_argument("-dt",nargs="?",default=0.1,type=float,help="Integration time interval")
+    parser.add_argument("-t","--test",action='store_true',help="""set this flag to run test functions.""")
+    parser.add_argument("-v","--verbose",action='store_true',help="""set this flag to run print statements during the process.""")
+
+    args = parser.parse_args()
+    if args.verbose:
+        print("Creating {} model and building network.".format(args.network))
+    pm = fmap[args.network]()
+    pm.buildNetwork()
+
+    for t in np.arange(args.t0,args.tf+args.dt,args.dt):
+        if args.verbose:
+            print("Advancing to time: {:0.3f}.".format(t))
+        pm(t)
+
+    if args.steady:
+        if args.verbose:
+            print("Advancing to steady state.")
+        pm.steadyState()
+
+    if args.test:
+        if args.verbose:
+            print("Running model test suite.")
+        pyplume.tests.testModel.runTests()
+
 if __name__ == "__main__":
+    # modelCLI()
     pm = PlumeModel.simpleModel()
     pm.buildNetwork()
+    for t in np.arange(0,1,0.1):
+        pm(t)
     pm.steadyState()
-    pm.ptype=False
-    print(pm)

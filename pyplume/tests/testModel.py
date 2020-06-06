@@ -65,3 +65,7 @@ def test_connectReactors():
 
 def test_createReactors():
     """Use this function to test creation of reactors."""
+
+def runTests():
+    """Use this function to run pytests."""
+    pytest.main([__file__,"--verbose"])

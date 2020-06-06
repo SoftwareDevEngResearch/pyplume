@@ -1,5 +1,6 @@
 import h5py
 import numpy as np
+import time
 
 def statementTVM(pReact):
     """Use this funciton to produce the TVM statemet"""
@@ -68,40 +69,50 @@ def ordToString(ordList):
 class h5Writer(object):
     """docstring for h5Writer."""
 
-    def __init__(self, fpath, keys, initial, chunk=100):
+    def __init__(self, fpath, keys, initial, chunk=100,nonexistant=True):
         super(h5Writer, self).__init__()
         self.fpath = fpath
         self.keys = keys
-        self.f = h5py.File(fpath,'w')
-        self.chunk = chunk
-        self.dshape = [self.chunk,np.shape(initial)[0]]
-        self.keys = [key.split(":")[0] for key in self.keys]
-        self.createSlices()
-        self.createDataSets()
-        self.storeData()
+        if nonexistant:
+            self.f = h5py.File(fpath,'w')
+            self.chunk = chunk
+            self.dshape = [self.chunk,np.shape(initial)[0]]
+            self.elements = [key.split(":")[1][1:] for key in self.keys]
+            self.keys = [key.split(":")[0] for key in self.keys]
+            self.itimes = []
+            self.createSlices()
+            self.createDataSets()
+            self.storeData()
+        else:
+            self.f = h5py.File(fpath,'r+')
 
-    def __call__(self,data):
+
+    def __call__(self,data,t):
         """Use the call function to write data to current hdf5 handle."""
         try:
             #Try to add to file
             for key in self.ukeys:
                 self.f[key][self.time[key],self.slices[key]] = data[self.slices[key]]
+                self.f['times'][self.time[key]] = t
         except Exception as e:
             print(str(e)+': resizing hdf5 dataset')
             #Adding now that is has been resized
             for key in self.ukeys:
                 self.f[key].resize(self.dshape[0]+self.chunk,axis=0)
                 self.f[key][self.time[key],self.slices[key]] = data[self.slices[key]]
+            self.f['times'].resize(len(self.f['times'])+self.chunk,axis=0)
+            self.f['times'][self.time[key]] = t
             self.dshape[0]+=self.chunk
         finally:
             #Updating times
             for key in self.ukeys:
                 self.time[key]+=1
+            self.itimes.append(t)
+            self.updateTime()
 
-    def __del__(self):
-        """This is the h5Writer destructor."""
-        # self.f.close() #Close file on destruction
-        pass
+    def updateTime(self):
+        """Use this function to update time in hdf5."""
+        self.f['time'][:] = [self.time[key] for key in self.time][:]
 
     def createSlices(self):
         """Use this function to create index slices."""
@@ -124,12 +135,17 @@ class h5Writer(object):
         for key in self.ukeys:
             self.f.create_dataset(key, self.dshape, dtype=np.float64,chunks=tuple(self.dshape),maxshape=(None,None))
             self.time[key]=0 #Store current time
+        self.f.create_dataset('times', (self.chunk,), dtype=np.float64,chunks=(self.chunk,),maxshape=(None,))
+
 
     def storeData(self):
         """Use this function to store data used to manage the hdf5 file."""
         #Adding keys
         tkeys=stringToOrd(self.keys)
         self.f.create_dataset('keys', np.shape(tkeys), dtype=int,data=tkeys)
+        #Adding elements
+        tkeys=stringToOrd(self.elements)
+        self.f.create_dataset('elements', np.shape(tkeys), dtype=int,data=tkeys)
         #Adding ukeys
         tkeys=stringToOrd(self.ukeys)
         self.f.create_dataset('ukeys', np.shape(tkeys), dtype=int,data=tkeys)
@@ -141,16 +157,26 @@ class h5Writer(object):
             slNums.append(sl.stop)
         self.f.create_dataset('slices', np.shape(slNums), dtype=int, data=slNums)
         self.f.create_dataset('chunk' ,(1,) ,dtype=int, data=self.chunk)
-        ttime = [ self.time[key] for key in self.time]
-        self.f.create_dataset('time',(len(self.time),),dtype=int,data=ttime)
+        ttime = [self.time[key] for key in self.time]
+
+        self.f.create_dataset('time',(len(ttime),),dtype=int,data=ttime)
         self.f.create_dataset('dshape',(len(self.dshape),),dtype=int,data=self.dshape)
 
-    def setVars(self,time,chunk,slices,dshape):
+    def setVars(self,time,chunk,slices,dshape,elements,ukeys):
         """This function is used by existingFile to set varibales for consistency."""
-        self.time = time
+        self.time = {key:time[i] for i,key in enumerate(ukeys)}
         self.chunk = chunk
         self.slices = slices
         self.dshape = dshape
+        self.elements = elements
+        self.ukeys = ukeys
+
+    def retrieve(self,i,key):
+        """Use this function to retrieve data from the hdf5 file."""
+        idx = self.elements.index(key)+self.slices[i].start
+        k = self.ukeys[i]
+        data = np.asarray(self.f[k])
+        return np.copy(self.f['times'][:self.time[k]]),np.copy(data[:self.time[k],idx])
 
     @classmethod
     def existingFile(cls,fpath):
@@ -160,11 +186,17 @@ class h5Writer(object):
         """
         f = h5py.File(fpath,'r+')
         args = fpath,ordToString(list(f['keys'])),np.zeros(f['dshape'])
-        vars = f['time'],f['chunk'],f['slices'],f['dshape']
+        nums = [n for n in f['slices']]
+        slices = tuple()
+        for i in range(0,len(nums),2):
+            slices+=slice(nums[i],nums[i+1],1),
+        vars = list(f['time']),f['chunk'],slices,f['dshape'],ordToString(f['elements']),ordToString(list(f['ukeys']))
         f.close()
-        h5w = cls(*args)
+        h5w = cls(*args,nonexistant=False)
         h5w.setVars(*vars)
         return h5w
 
 if __name__ == "__main__":
-    h5Writer.existingFile("simple.hdf5")
+    writer = h5Writer.existingFile("simple.hdf5")
+    d,t = writer.retrieve(1,'CH4')
+    print(t)

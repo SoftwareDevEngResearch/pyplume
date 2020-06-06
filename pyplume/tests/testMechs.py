@@ -59,7 +59,6 @@ def test_mechFileRestore():
         nfile = os.path.join(mPath,f)
         assert filecmp.cmp(ofile,nfile,shallow=False)
 
-def CLI():
+def runTests():
     """Use this function to run pytests."""
-    print(main_dir)
     pytest.main([__file__,"--verbose"])

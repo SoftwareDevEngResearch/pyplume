@@ -2,7 +2,7 @@
 This package is intended to build reactor network models for exhaust plumes based on user input and incorporate some methods for analysis of the results.
 
 ### Installation
-This package can be installed via conda and pip. (UPDATEME)
+This package can be installed via [conda](https://anaconda.org/anthony-walker/pyplume) and [pip](https://pypi.org/project/pyplume/).
 
 ```bash
   conda install -c anthony-walker pyplume
@@ -11,6 +11,12 @@ This package can be installed via conda and pip. (UPDATEME)
 ```bash
   pip install pyplume
 ```
+
+This package relies on [Cantera](https://cantera.org/) and other packages. If there is a failure in the `conda install` process be sure to check that the appropriate channels are added, e.g.,
+```bash
+conda config --add channels cantera
+```
+
 
 ### Mechanism management
 The model generation two requires chemical mechanisms to run. Some of these mechanisms can be found within Cantera and exploited that way. Otherwise, mechanisms files that you want to use with this model generation software can be managed in two ways. The first way is through the command line interface (CLI). The `pyplume.mech` is the command which will be used to invoke the necessary commands to manage the mechanisms.
@@ -113,56 +119,64 @@ class PlumeModel(object):
 ```python
 @classmethod
   def simpleModel(cls,mechs=["gri30.cti","air.cti","gri30.cti"],residenceTime=lambda t: 0.1, entrainment=lambda t:0.1,fpath="simple.hdf5",setCanteraPath=None,build=False):
-      """This classmethod build a 1 reactor exhaust model. It has extra parameters than the class
-      Linear expansion model:
-      [fuel res]->[combustor]->[ex1]->[exRes]
-      [farfield]->[ex1]
-      """
+    """
+        Simple model:
+        This classmethod builds a 1 reactor exhaust model.
+
+        Network:
+        [fuel res]->[combustor]->[ex1]->[exRes]
+        [farfield]->[ex1]
+    """
 ```
 ##### Linear Expansion Model
 ```python
 @classmethod
   def linearExpansionModel(cls,n=10,mechs=["gri30.cti","air.cti","gri30.cti"],residenceTime=lambda t: 0.1, entrainment=lambda t:0.1,fpath="linear.hdf5",setCanteraPath=None,build=False):
-      """ Use this function to generate an instance with linear expansion connects method. It takes all the parameters
-          that the class does except connects and replaces connects with n parameter.
+    """
+        Linear Expansion Model:
+        Use this function to generate an instance with linear expansion connects method. It takes all the parameters
+        that the class does except connects and replaces connects with n parameter.
 
-      Parameters:
-          n - number of reactors using linear expansion. e.g. at level 1 there is one reactor
-              at level two there are two and so on. n must result in an integer number of steps
-              based on the formula:steps=(-1+np.sqrt(1+8*n))/2
+        Parameters:
+            n - number of reactors using linear expansion. e.g. at level 1 there is one reactor
+                at level two there are two and so on. n must result in an integer number of steps
+                based on the formula:steps=(-1+np.sqrt(1+8*n))/2
 
-      Linear expansion model:
-      [fuel res]->[combustor]->[ex1]->[ex2]->[ex4]->[exRes]
-                                    ->[ex3]->[ex5]->[exRes]
-                                           ->[ex6]->[exRes]
-      [farfield]->[ex1,ex2,ex3,ex4,ex6]
+        Network:
+        [fuel res]->[combustor]->[ex1]->[ex2]->[ex4]->[exRes]
+                                      ->[ex3]->[ex5]->[exRes]
+                                             ->[ex6]->[exRes]
+        [farfield]->[ex1,ex2,ex3,ex4,ex6]
 
-      Notes:
-      The farfield is connected as an inlet for each exterior reactor if you were to draw them as 2D blocks.
-      """
+        Notes:
+        The farfield is connected as an inlet for each exterior reactor if you were to draw them as 2D blocks.
+    """
 ```
 
 ##### Grid model
 ```python
 @classmethod
   def gridModel(cls,n=3,m=3,mechs=["gri30.cti","air.cti","gri30.cti"],residenceTime=lambda t: 0.1, entrainment=lambda t:0.1,fpath="grid.hdf5",setCanteraPath=None,build=False):
-      """ Use this function to generate an instance with grid connects method. It takes all the parameters
-          that the class does except connects and replaces connects with n parameter.
+    """
+        Grid model:
+        Use this function to generate an instance with grid connects method. It takes all the parameters
+        that the class does except connects and replaces connects with n parameter.
 
-      Parameters:
-          n - Integer number of reactor rows
-          m - Integer number of reactor columns
+        Parameters:
+            n - Integer number of reactor rows
+            m - Integer number of reactor columns
 
-      Grid model (3x3):
-      [fuel res]->[combustor]->[ex0]->[ex1]->[ex4]->[ex7]->[exRes]
-                                    ->[ex2]->[ex5]->[ex8]->[exRes]
-                                    ->[ex3]->[ex6]->[ex9]->[exRes]
+        Network:
+        [fuel res]->[combustor]->
+        [ex1]->[ex2]->[ex5]->[ex8]->[exRes]
+             ->[ex3]->[ex6]->[ex9]->[exRes]
+             ->[ex4]->[ex7]->[ex10]->[exRes]
 
-      [farfield]->[ex0,ex1,ex7,ex4,ex3,ex6,ex9]
+        [farfield]->[ex1,ex2,ex4,ex5,ex7,ex8,ex10]
 
-      Notes:
-      The farfield is connected as an inlet for each exterior reactor if you were to draw them as 2D blocks.
-      """
+        Notes:
+        The farfield is connected as an inlet for each exterior reactor if you were to draw them as 2D blocks.
+    """
 ```
 
 This looks something like
@@ -207,7 +221,7 @@ exhaust0: T: 300.00 K, V: 1.01 m^3, mass: 0.09 kg
 exhaust: T: 300.00 K, V: 1.00 m^3, mass: 1.18 kg
 Reactor Network Mass Fractions:
 ```
-If you want to generate the file then manage seperately, the `h5Writer` class can be used for this purpose.
+If you want to generate the file then manage it separately, the `h5Writer` class can be used for this purpose.
 ```python
   import output,numpy
   h5w=output.h5Writer.existingFile('simple.hdf5')
@@ -217,15 +231,74 @@ If you want to generate the file then manage seperately, the `h5Writer` class ca
 
 ##### On the command line
 
----Not yet Implemented---
-<!-- Working on this -->
+The command line is currently only set up to run class method models. This can be with `pyplume.model chosenModel`.
+
+```shell
+usage: pyplume.model [-h] [-ss] [-t0 [T0]] [-tf [TF]] [-dt [DT]] [-t] [-v]
+                     {simple,grid,linear}
+
+This is the commandline interface for running an exhuast network.
+
+
+positional arguments:
+  {simple,grid,linear}  This is a required arguement that specifies the model
+                        which will be used. Currently implemented choices are
+                        simple, grid, and linear.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -ss, --steady         set this flag run to steady state after integration
+  -t0 [T0]              Initial integration time
+  -tf [TF]              Final integration time
+  -dt [DT]              Integration time interval
+  -t, --test            set this flag to run test functions.
+  -v, --verbose         set this flag to run print statements during the process.
+```
+
+An example of this is
+```shell
+  pyplume.model simple -v -ss -t
+```
+which runs the `simple` model with the `--verbose, --steady, and --test` options.
+This produces
+```
+Creating simple model and building network.
+Advancing to time: 0.000.
+Advancing to time: 0.100.
+.
+.
+Advancing to time: 0.900.
+Advancing to time: 1.000.
+Advancing to steady state.
+Running model test suite.
+========================================================= test session starts ==========================================================
+platform linux -- Python 3.6.10, pytest-5.4.1, py-1.8.1, pluggy-0.13.1 -- /home/sokato/miniconda3/envs/pyplume/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sokato
+collected 5 items
+
+../../miniconda3/envs/pyplume/lib/python3.6/site-packages/pyplume/tests/testModel.py::test_linearExpansionModel PASSED           [ 20%]
+.
+.
+```
 
 ### Plotting
-
 The methods for plotting the generated data are contained in the an `hdf5` or in script are found in `pyplume.figs`
 
-### Statistical methods
+Basic property plotting is currently implemented through scripting or the command line interface.
 
+#### In a script
+```python
+fgk = figureGenerationKit('simple.hdf5',save=True,show=True)
+fgk.plotProperty(['mass','CO2','H2O'])
+```
+This will plot the specified properties of `simple.hdf5` as a function of time. It will also save the plots to pdf files and display them. The same functionality on the command line would look like:
+
+```bash
+pyplume.figs "simple.hdf5" -w -d -p "mass" "CO2","H2O"
+```
+
+### Statistical methods
 The methods for plotting the generated data are contained in the an `hdf5` or in script are found in `pyplume.stats`
 
 ### Testing
