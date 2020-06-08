@@ -199,9 +199,10 @@ plumeModel.atmosphere.TPX = 300.0, 101325, 'O2:0.21, N2:0.78, AR:0.01' #K, Pa, M
 plumeModel.exhausts[3].TPX= 300.0, 101325, 'O2:0.21, N2:0.78, AR:0.01' #Set conditions for exhaust 3
 ```
 
-Now that the `plumeModel`'s conditions are set, it can be advanced to a specific time or to steady state as
+Now that the `plumeModel`'s conditions are set, it can be built and advanced to a specific time or to steady state as
 
 ```python
+plumeModel.buildNetwork() #Build reactor network based on conditions
 plumeModel(0.1) #advance to time=0.1 s
 plumeModel.steadyState()
 ```
@@ -237,7 +238,7 @@ The command line is currently only set up to run class method models. This can b
 usage: pyplume.model [-h] [-ss] [-t0 [T0]] [-tf [TF]] [-dt [DT]] [-t] [-v]
                      {simple,grid,linear}
 
-This is the commandline interface for running an exhuast network.
+This is the commandline interface for running an exhaust network.
 
 
 positional arguments:
