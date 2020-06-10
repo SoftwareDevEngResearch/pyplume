@@ -98,7 +98,7 @@ Aircraft contrails are a large contributor to radiative forcing
 
 So, how do we produce a more in-depth study with a set of well-stirred ideal gas reactors? The main idea that I had was the ability to relax the well mixed nature of well-stirred reactors. This can be achieved with multiple connected reactors, entrainment, and mass conservation. \pyplume{} uses an adjacency matrix approach to creating and connecting the exhaust reactor network which makes this possible, e.g., mass entrainment into an outer reactor will provide a different concentration than inner reactors. The second idea was to use larger mechanisms that include more of elementary reactions. This is also possible with the package because the mechanism can be independently specified for every reactor if desired.
 
-These ideas led to the development of three models within \pyplume: \texttt{simple}, \texttt{linear}, and \texttt{grid}. 
+These ideas led to the development of three models within \pyplume: \texttt{simple}, \texttt{linear}, and \texttt{grid}. The simple model is essentially Figure~\ref{fig:general} with added entrainment t
 
 \section{Results}
 
