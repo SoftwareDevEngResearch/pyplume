@@ -86,9 +86,14 @@ Aircraft contrails are a large contributor to radiative forcing
 
 \section{Methods}
 
-\texttt{PyPlume} was built with Cantera\cite{cantera} at it's core. The goal was to create a versatile \texttt{Python} tool that can generate complicated exhaust models with a reactor network approach. While complicated models are currently constrained by expense, I am working towards implemented methods to drastically accelerate the solution process and reduce this expense. This package was created with the intention of using these methods on a particular application such as a more rigorous study of aircraft exhaust. \texttt{PyPlume} focuses on the exhaust portion of the system but also includes a reservoir-combustor network to generate the input conditions and, an atmospheric reservoir for mass entrainment into the exhaust network.
+\texttt{PyPlume} was built with Cantera\cite{cantera} at it's core. The goal was to create a versatile \texttt{Python} tool that can generate complicated exhaust models with a reactor network approach. While complicated models are currently constrained by expense, I am working towards implemented methods to drastically accelerate the solution process and reduce this expense. This package was created with the intention of using these methods on a particular application such as a more rigorous study of aircraft exhaust. \texttt{PyPlume} focuses on the exhaust portion of the system but also includes a reservoir-combustor network to generate the input conditions and, an atmospheric reservoir for mass entrainment into the exhaust network. The general idea is shown in Figure~\ref{fig:general}.
 
-
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.65]{examples/report/figs/general.jpg}
+    \caption{General}
+    \label{fig:general}
+\end{figure}
 
 So, how do we produce a more indepth study with a set of well-stirred ideal gas reactors? The main idea that I had was to relax the well mixed nature of well-stirred reactors. This can be achieved with multiple connected reactors, entrainment, and mass conservation. 
 
