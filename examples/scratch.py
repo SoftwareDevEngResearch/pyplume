@@ -15,10 +15,11 @@ pyplume.mech.mechFileList() #list mechanism files
 pyplume.tests.testMechs.runTests() #Run tests for mech management
 
 # Model Use
-pm = pyplume.model.PlumeModel.simpleModel()
-pm.buildNetwork()
-for t in np.arange(0.1,1.1,0.1):
-    pm(t)
-pm.steadyState()
-
-pyplume.tests.testModel.runTests()
+pm = pyplume.model.PlumeModel.gridModel()
+print(pm.connects)
+# pm.buildNetwork()
+# for t in np.arange(0.1,1.1,0.1):
+#     pm(t)
+# pm.steadyState()
+#
+# pyplume.tests.testModel.runTests()
