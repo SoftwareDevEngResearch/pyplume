@@ -244,7 +244,7 @@ The command line is currently only set up to run class method models. This can b
 usage: pyplume.model [-h] [-ss] [-t0 [T0]] [-tf [TF]] [-dt [DT]] [-t] [-v]
                      {simple,grid,linear}
 
-This is the commandline interface for running an exhuast network.
+This is the commandline interface for running an exhaust network.
 
 
 positional arguments:
