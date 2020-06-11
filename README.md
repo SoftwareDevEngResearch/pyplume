@@ -2,21 +2,29 @@
 This package is intended to build reactor network models for exhaust plumes based on user input and incorporate some methods for analysis of the results.
 
 ### Installation
-This package can be installed via [conda](https://anaconda.org/anthony-walker/pyplume) and [pip](https://pypi.org/project/pyplume/).
 
-```bash
-  conda install -c anthony-walker pyplume
+This package can be installed via [conda](https://anaconda.org/anthony-walker/pyplume) and [pip](https://pypi.org/project/pyplume/). Note, the appropriate channels have to be available to conda or the install will fail. Namely my channel `anthony-walker` and `cantera`. I suggest creating a `conda` environment as
+
+```shell
+conda create --name exhaustModeling -c anthony-walker -c cantera pyplume
 ```
 
-```bash
+Otherwise, the package can be install with `conda` as
+
+```shell
+  conda install -c anthony-walker pyplume
+```
+or it can be install with `pip` but `pip` will not install the necessary dependencies---this is done with
+
+```shell
   pip install pyplume
 ```
 
 This package relies on [Cantera](https://cantera.org/) and other packages. If there is a failure in the `conda install` process be sure to check that the appropriate channels are added, e.g.,
-```bash
+
+```shell
 conda config --add channels cantera
 ```
-
 
 ### Mechanism management
 The model generation two requires chemical mechanisms to run. Some of these mechanisms can be found within Cantera and exploited that way. Otherwise, mechanisms files that you want to use with this model generation software can be managed in two ways. The first way is through the command line interface (CLI). The `pyplume.mech` is the command which will be used to invoke the necessary commands to manage the mechanisms.
