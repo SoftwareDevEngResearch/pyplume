@@ -2,6 +2,7 @@
 This package is intended to build reactor network models for exhaust plumes based on user input and incorporate some methods for analysis of the results.
 
 ### Installation
+
 This package can be installed via [conda](https://anaconda.org/anthony-walker/pyplume) and [pip](https://pypi.org/project/pyplume/). Note, the appropriate channels have to be available to conda or the install will fail. Namely my channel `anthony-walker` and `cantera`. I suggest creating a `conda` environment as
 
 ```shell
@@ -20,10 +21,10 @@ or it can be install with `pip` but `pip` will not install the necessary depende
 ```
 
 This package relies on [Cantera](https://cantera.org/) and other packages. If there is a failure in the `conda install` process be sure to check that the appropriate channels are added, e.g.,
+
 ```shell
 conda config --add channels cantera
 ```
-
 
 ### Mechanism management
 The model generation two requires chemical mechanisms to run. Some of these mechanisms can be found within Cantera and exploited that way. Otherwise, mechanisms files that you want to use with this model generation software can be managed in two ways. The first way is through the command line interface (CLI). The `pyplume.mech` is the command which will be used to invoke the necessary commands to manage the mechanisms.
@@ -206,9 +207,10 @@ plumeModel.atmosphere.TPX = 300.0, 101325, 'O2:0.21, N2:0.78, AR:0.01' #K, Pa, M
 plumeModel.exhausts[3].TPX= 300.0, 101325, 'O2:0.21, N2:0.78, AR:0.01' #Set conditions for exhaust 3
 ```
 
-Now that the `plumeModel`'s conditions are set, it can be advanced to a specific time or to steady state as
+Now that the `plumeModel`'s conditions are set, it can be built and advanced to a specific time or to steady state as
 
 ```python
+plumeModel.buildNetwork() #Build reactor network based on conditions
 plumeModel(0.1) #advance to time=0.1 s
 plumeModel.steadyState()
 ```
@@ -244,7 +246,7 @@ The command line is currently only set up to run class method models. This can b
 usage: pyplume.model [-h] [-ss] [-t0 [T0]] [-tf [TF]] [-dt [DT]] [-t] [-v]
                      {simple,grid,linear}
 
-This is the commandline interface for running an exhuast network.
+This is the commandline interface for running an exhaust network.
 
 
 positional arguments:
