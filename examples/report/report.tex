@@ -20,14 +20,13 @@
 \usepackage{enumitem}
 \usepackage{tcolorbox}
 \usepackage{subcaption}
+
 \hypersetup{
     colorlinks=true,
     linkcolor=blue,
     filecolor=magenta,      
     urlcolor=cyan,
 }
-
-
       
 
 \newenvironment{codeblock}[1]
@@ -56,7 +55,6 @@
 
 \institute{A.~Walker \at
            School of Mechanical, Industrial, and Manufacturing Engineering, Oregon State University, Corvallis, OR, USA \\
-
            \email{walkanth@oregonstate.edu}
 }
 \date{Received: date / Accepted: date}
@@ -69,17 +67,23 @@
 As society continues to relay on the burning of fuel to extract energy, it is important to understand the impact that our actions have on our health and the environment. \pyplume{} is a software developed for the purpose of modeling exhausts to help understand these impacts. The software focuses on building complicated reactor networks to more practically simulate the exhaust-atmosphere interaction and understand the composition and effects of exhaust products on the environment. The software is the result. A tool that can be used for further study based on a researcher's needs. 
 \end{abstract}
 
+\section{Introduction \& Motivation}
 
-\section{Introduction}
+As society continues to relay on the burning of matter to extract energy, it is important to understand the impact that our actions have on our health and the environment. Is all the fuel we burn detrimental to our health in the long term? To what degree can we safely continue our way of life? Are we destroying other forms of life on the planet as well with out behavior? The list of important questions goes on and answering them is no minor feat.
 
-Chemistry plays an important role in many aspects of today's society such as transportation, healthcare, energy production, and environmental safety and protection. As society continues to relay on the burning of matter to extract energy, it is important to understand the impact that our actions have on our health and the environment. Is all the fuel we burn detrimental to our health in the long term? To what degree can we safely continue our way of life? Are we destroying other forms of life on the planet as well with out behavior? The list of important questions goes on and answering them is no minor feat.
+Chemistry plays an important role in many aspects of today's society such as transportation, healthcare, energy production, and environmental safety and protection. In regards to transportation, the role only gets more important as Airbus predicts that air traffic will double in the next 15 years\cite{Airbus2019Global2019-2038}. Meanwhile, estimates place aircraft contrails as the most substantial factor in radiative forcing \cite{Burkhardt2011GlobalCirrus,Stocker2013ClimateChange} as cited in \cite{Caiazzo2017ImpactWarming}. The idea that pollutants affect the environment is not novel; there has been a noticeable impact on the climate from aerosols for quite some time \cite{Mitchell1971TheSurface}. Environmental impacts aside, studies suggest negative impacts on respiratory and cardiovascular health as a result of aerosol particles \cite{2014HealthAerosols,Poschl2005AtmosphericEffects}.
+
+This aforementioned work is only a small fraction of studies on this subject matter but these questions remain important as our reliance increases. Answering these questions more accurately requires scientific study to develop and model the lifespan and behavior of products from burning matter. Small scale phenomena can be analyzed experimentally to determine constituents and potential impacts. However, how do you experimentally model wildfire that burns hundreds of thousands of acres with an immense variety of different fuels both living and dead? How do you model the burning of a jet fuel which has thousands of different chemical species to track? How do you follow the products from both scenarios throughout the atmosphere across the world? The answer would seem to be computational modeling, but it has it's limitations as well. First and foremost, modeling such complicated phenomena requires a lot of computing resources. The models can be simplified to use less resources but at the cost of accuracy \cite{Christian2018GlobalCampaigns} as cited in \cite{Kelp2018Orders-of-magnitudeEmulation}.
+Limitations aside, improvements in the ability to accurately model reacting flows are necessary to continue improving our understanding of impacts on the environment and our health. This is the core idea of \pyplume{}. It is a modeling software with the goal of being an extensible tool for more in depth research studies on the evolution of chemical species from burning various fuels.
 
 
-Answering these questions definitively requires scientific study to develop and model the lifespan and behavior of products from burning matter. Small scale phenomena can be analyzed experimentally to determine constituents and potential impacts. However, how do you experimentally model wildfire that burns hundreds of thousands of acres with an immense variety of different fuels both living and dead? How do you model the burning of a jet fuel which has thousands of different chemical species to track? How do you follow the products from both scenarios throughout the atmosphere across the world? The answer would seem to be computational modeling, but it has it's limitations as well. First and foremost, modeling such complicated phenomena requires a lot of computing resources. The models can be simplified to use less resources but at the cost of accuracy.
 
-Aircraft contrails are a large contributor to radiative forcing
+ 
 
-\section{Motivation}
+
+
+
+
 
 
 \section{Methods}
