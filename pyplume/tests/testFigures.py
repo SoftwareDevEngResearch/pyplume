@@ -1,5 +1,5 @@
 import sys,os,pytest,filecmp,shutil,pytest
-def testPlaceHolder():
+def testFiguresMain():
     """This is a temporary placeholder"""
     assert True
 

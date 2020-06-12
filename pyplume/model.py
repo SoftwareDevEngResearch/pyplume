@@ -264,29 +264,45 @@ def modelCLI():
     fmap = {'simple' : PlumeModel.simpleModel,
                     'grid' : PlumeModel.gridModel,
                     "linear":PlumeModel.linearExpansionModel}
-    parser.add_argument('network', choices=fmap.keys(),help="This is a required arguement that specifies the model which will be used. Currently implemented choices are simple, grid, and linear.")
+    parser.add_argument('network',nargs='?', choices=fmap.keys(),help="This is a required arguement that specifies the model which will be used. Currently implemented choices are simple, grid, and linear.")
     parser.add_argument("-ss","--steady",action='store_true',help="""set this flag run to steady state after integration""")
     parser.add_argument("-t0",nargs="?",default=0,type=float,help="Initial integration time")
-    parser.add_argument("-tf",nargs="?",default=1,type=float,help="Final integration time")
+    parser.add_argument("-tf",nargs="?",type=float,help="Final integration time")
+    parser.add_argument("-m","--mech",nargs="?",type=str,help="mechanism file")
     parser.add_argument("-dt",nargs="?",default=0.1,type=float,help="Integration time interval")
     parser.add_argument("-t","--test",action='store_true',help="""set this flag to run test functions.""")
     parser.add_argument("-v","--verbose",action='store_true',help="""set this flag to run print statements during the process.""")
-
     args = parser.parse_args()
-    if args.verbose:
-        print("Creating {} model and building network.".format(args.network))
-    pm = fmap[args.network]()
-    pm.buildNetwork()
 
-    for t in np.arange(args.t0,args.tf+args.dt,args.dt):
+    if args.network is not None:
         if args.verbose:
-            print("Advancing to time: {:0.3f}.".format(t))
-        pm(t)
-
-    if args.steady:
-        if args.verbose:
-            print("Advancing to steady state.")
-        pm.steadyState()
+            print("Creating {} model and building network.".format(args.network))
+        if args.mech is None:
+            pm = fmap[args.network]()
+        else:
+            if args.verbose:
+                print('Building network with {} and air.cti.'.format(args.mech))
+            mechs=[args.mech,"air.cti",args.mech]
+            pm = fmap[args.network]()
+        pm.buildNetwork()
+        if args.tf is not None:
+            for t in np.arange(args.t0,args.tf+args.dt,args.dt):
+                if args.verbose:
+                    print("Advancing to time: {:0.3f}.".format(t))
+                pm(t)
+        if args.steady:
+            if args.verbose:
+                print("Advancing to steady state.")
+            pm.steadyState()
+    else:
+        try:
+            if args.tf is not None or args.steady:
+                raise Exception('Positional model argument not supplied, simulation cannot procede without specified model.')
+        except Exception as e:
+            tb = traceback.format_exc()
+            print(tb)
+            if args.verbose:
+                print('Proceeding...')
 
     if args.test:
         if args.verbose:
