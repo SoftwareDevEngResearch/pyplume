@@ -1,4 +1,5 @@
-# PyPlume
+# PyPlume 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3891934.svg)](https://doi.org/10.5281/zenodo.3891934)
 This package is intended to build reactor network models for exhaust plumes based on user input and incorporate some methods for analysis of the results.
 
 ### Installation
