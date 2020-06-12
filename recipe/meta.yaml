@@ -1,5 +1,5 @@
 {% set name = "pyplume" %}
-{% set version = "0.0.2" %}
+{% set version = "0.0.5" %}
 
 package:
   name: "{{ name|lower }}"
@@ -7,24 +7,15 @@ package:
 
 source:
   url: "https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz"
-  sha256: 88b546ed5492c3c7f4f7eb3a3b2366a0844df2fe7c0771ff0200ef5386ef4df6
-  # git_url: https://github.com/SoftwareDevEngResearch/pyplume.git
-  # git_rev: 1.1.4
-  # git_depth: 1 # (Defaults to -1/not shallow)
-
-channels:
-  - cantera
-  - anaconda
-  - conda-forge
-  - anthony-walker
+  sha256: de27632a00acd99818960c203a4e54a20c96b948dd59e611bf3d9e8454642536
 
 build:
   number: 0
   entry_points:
-    - pyplume.mech=pyplume.mech:mechCLI
+    - pyplume.figures=pyplume.figures:figuresCLI
+    - pyplume.statistics=pyplume.statistics:statisticsCLI
     - pyplume.model=pyplume.model:modelCLI
-    - pyplume.figs=pyplume.figs:figsCLI
-    - pyplume.stats=pyplume.stats:statsCLI
+    - pyplume.mech=pyplume.mech:mechCLI
   script: "{{ PYTHON }} -m pip install . -vv"
 
 requirements:
@@ -45,17 +36,11 @@ requirements:
 test:
   imports:
     - pyplume
-    - pyplume.tests
-    - pyplume.model
-    - pyplume.mech
-    - pyplume.output
-    - pyplume.figs
-    - pyplume.stats
   commands:
-    - pyplume.mech --help
+    - pyplume.figures --help
+    - pyplume.statistics --help
     - pyplume.model --help
-    - pyplume.figs --help
-    - pyplume.stats --help
+    - pyplume.mech --help
 
 about:
   home: "https://github.com/SoftwareDevEngResearch/plume-generation-and-analysis"

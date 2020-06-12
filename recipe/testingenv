@@ -1,0 +1,1 @@
+conda create --name testing -c cantera -c conda-forge cantera matplotlib twine h5py --yes
