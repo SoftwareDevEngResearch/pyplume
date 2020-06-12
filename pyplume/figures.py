@@ -1,5 +1,5 @@
 
-import output, argparse, pytest
+import output, argparse, pytest, traceback
 import matplotlib.pyplot as plt
 import pyplume.tests.testFigures
 
@@ -53,28 +53,38 @@ def figuresCLI():
     plotting results from the exhaust network.
     """)
 
-    parser.add_argument('filename', type=str,help="filename used for plotting.")
+    parser.add_argument('filename',nargs='?', type=str,help="filename used for plotting.")
     parser.add_argument("-t","--test",action='store_true',help="""set this flag to run test functions.""")
-    parser.add_argument("-v","--verbose",action='store_true',help="""Save plots as they are being generated.""")
-    parser.add_argument("-w","--write",action='store_true',help="""Display plots as they are being generated""")
-    parser.add_argument("-d","--display",action='store_true',help="""set this flag to run print statements during the process.""")
+    parser.add_argument("-v","--verbose",action='store_true',help="""set this flag to run corresponding print statements through code.""")
+    parser.add_argument("-w","--write",action='store_true',help="""write plots to file as they are generated.""")
+    parser.add_argument("-d","--display",action='store_true',help="""set this flag to display plots on screen.""")
     parser.add_argument("-p","--property",nargs="+",default=['CH4','O2'],help="Plot a specific property")
     parser.add_argument("-r","--reactors",nargs="+",default=None,help="Specify reactors integer indices to plot property for a subset of reactors")
 
     args = parser.parse_args()
+    if args.filename is not None:
+        if args.verbose:
+            print("Creating figure generation kit.")
+            tstr = "Plotting properties: "
+            for prop in args.property:
+                tstr+=prop
+            print(tstr)
+            if args.write:
+                print("Writing data.")
+            if args.display:
+                print("Displaying data.")
+        fgk = figureGenerationKit(args.filename,save=args.write,show=args.display)
+        fgk.plotProperty(args.property,reactors=args.reactors)
+    else:
+        try:
+            if args.write or args.display:
+                raise Exception('No filename specified.')
+        except Exception as e:
+            tb = traceback.format_exc()
+            print(tb)
+            if args.verbose:
+                print('Proceeding...')
 
-    if args.verbose:
-        print("Creating figure generation kit.")
-        tstr = "Plotting properties: "
-        for prop in args.property:
-            tstr+=prop
-        print(tstr)
-        if args.write:
-            print("Writing data.")
-        if args.display:
-            print("Displaying data.")
-    fgk = figureGenerationKit(args.filename,save=args.write,show=args.display)
-    fgk.plotProperty(args.property,reactors=args.reactors)
 
     if args.test:
         if args.verbose:
