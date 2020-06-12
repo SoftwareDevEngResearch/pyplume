@@ -209,8 +209,9 @@ The model interface---shown in Figure~\ref{code:model}---can be used with \textt
 
 \begin{codeblock}{Command line interface help for \texttt{pyplume.model}}
 \begin{lstlisting}[language=bash]
-usage: pyplume.model [-h] [-ss] [-t0 [T0]] [-tf [TF]] [-dt [DT]] [-t] [-v]
-                     {simple,grid,linear}
+usage: pyplume.model [-h] [-ss] [-t0 [T0]] [-tf [TF]] [-m [MECH]] [-dt [DT]]
+                     [-t] [-v]
+                     [{simple,grid,linear}]
 This is the commandline interface for running an exhaust network.
 positional arguments:
   {simple,grid,linear}  This is a required arguement that specifies the model
@@ -222,6 +223,8 @@ optional arguments:
   -ss, --steady         set this flag run to steady state after integration
   -t0 [T0]              Initial integration time
   -tf [TF]              Final integration time
+  -m [MECH], --mech [MECH]
+                        mechanism file
   -dt [DT]              Integration time interval
   -t, --test            set this flag to run test functions.
   -v, --verbose         set this flag to run print statements during the
@@ -236,7 +239,7 @@ The final interface available to the command line is \texttt{pyplume.figures -h}
 \begin{lstlisting}
 usage: pyplume.figures [-h] [-t] [-v] [-w] [-d] [-p PROPERTY [PROPERTY ...]]
                        [-r REACTORS [REACTORS ...]]
-                       filename
+                       [filename]
 This is the commandline interface for plotting results from the exhaust
 network.
 positional arguments:
@@ -245,24 +248,26 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -t, --test            set this flag to run test functions.
-  -v, --verbose         Save plots as they are being generated.
-  -w, --write           Display plots as they are being generated
-  -d, --display         set this flag to run print statements during the
-                        process.
+  -v, --verbose         set this flag to run corresponding print statements
+                        through code.
+  -w, --write           write plots to file as they are generated.
+  -d, --display         set this flag to display plots on screen.
   -p PROPERTY [PROPERTY ...], --property PROPERTY [PROPERTY ...]
                         Plot a specific property
   -r REACTORS [REACTORS ...], --reactors REACTORS [REACTORS ...]
                         Specify reactors integer indices to plot property for
                         a subset of reactors
+
 \end{lstlisting}
 \label{code:figures}
 \end{codeblock}
-These three interfaces can be combined to produce data and figures as desired. This example creates places \texttt{test.cti} in the mechanism files
+
+These three interfaces can be combined to produce data and figures as desired. This example creates places \texttt{test.cti} in the mechanism files (assuming that it exists in the directory). It then integrates to the final time of 1, advances to steady state, and plots the resulting data.
 
 \begin{codeblock}{Usage of CLI interface on an example}
 \begin{lstlisting}
 pyplume.mech -a test.cti
-pyplume.model simple --verbose
+pyplume.model simple -tf 1 --steady --verbose --mech test.cti
 pyplume.figures simple.hdf5 -d -w -p 'CO2' 'mass'
 \end{lstlisting}
 \label{code:CLI}
