@@ -272,10 +272,8 @@ def modelCLI():
     parser.add_argument("-dt",nargs="?",default=0.1,type=float,help="Integration time interval")
     parser.add_argument("-t","--test",action='store_true',help="""set this flag to run test functions.""")
     parser.add_argument("-v","--verbose",action='store_true',help="""set this flag to run print statements during the process.""")
-    try:
-        args = parser.parse_args()
-    except:
-        args
+    args = parser.parse_args()
+
     if args.network is not None:
         if args.verbose:
             print("Creating {} model and building network.".format(args.network))
