@@ -5,7 +5,7 @@ with open("README.md", encoding='utf-8') as fh:
 
 setuptools.setup(
     name="pyplume",
-    version="0.0.2",
+    version="0.0.4",
     author="Anthony Walker",
     author_email="walkanth@oregonstate.edu",
     license='BSD 3-clause "New" or "Revised License"',
@@ -17,12 +17,12 @@ setuptools.setup(
         'console_scripts': [
             'pyplume.mech=pyplume.mech:mechCLI',
             'pyplume.model=pyplume.model:modelCLI',
-            'pyplume.figs=pyplume.figs:figsCLI',
-            'pyplume.stats=pyplume.stats:statsCLI',
+            'pyplume.figures=pyplume.figures:figuresCLI',
+            'pyplume.statistics=pyplume.statistics:statisticsCLI'
         ]
     },
-    packages=setuptools.find_packages(),
-    package_dir={'pyplume':'./pyplume', 'tests':'./pyplume/tests'},
+    packages=['pyplume'],
+    include_package_data=True,
     package_data={'pyplume': ['mechanisms/*','originals/*','tests/*']},
     classifiers=[
         "Programming Language :: Python :: 3",

@@ -1,7 +1,7 @@
 
 import output, argparse, pytest
 import matplotlib.pyplot as plt
-import pyplume.tests.testFigs
+import pyplume.tests.testFigures
 
 class figureGenerationKit(object):
     """docstring for figGenKit."""
@@ -47,7 +47,7 @@ class figureGenerationKit(object):
             self.saveShow(sstr)
             plt.close()
 
-def figsCLI():
+def figuresCLI():
     """This function is used for the command line interface option of mech"""
     parser = argparse.ArgumentParser(description="""This is the commandline interface for
     plotting results from the exhaust network.
@@ -78,8 +78,8 @@ def figsCLI():
 
     if args.test:
         if args.verbose:
-            print("Running model test suite.")
-        pyplume.tests.testFigs.runTests()
+            print("Running figures test suite.")
+        pyplume.tests.testFigures.runTests()
 
 if __name__ == "__main__":
     fgk = figureGenerationKit("./simple.hdf5")

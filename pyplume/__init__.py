@@ -1,5 +1,5 @@
 from . import mech
 from . import model
-from . import figs
+from . import figures
 from . import output
-from . import stats
+from . import statistics

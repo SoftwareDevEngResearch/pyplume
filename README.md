@@ -290,7 +290,7 @@ collected 5 items
 ```
 
 ### Plotting
-The methods for plotting the generated data are contained in the an `hdf5` or in script are found in `pyplume.figs`
+The methods for plotting the generated data are contained in the an `hdf5` or in script are found in `pyplume.figures`
 
 Basic property plotting is currently implemented through scripting or the command line interface.
 
@@ -302,11 +302,11 @@ fgk.plotProperty(['mass','CO2','H2O'])
 This will plot the specified properties of `simple.hdf5` as a function of time. It will also save the plots to pdf files and display them. The same functionality on the command line would look like:
 
 ```bash
-pyplume.figs "simple.hdf5" -w -d -p "mass" "CO2","H2O"
+pyplume.figures "simple.hdf5" -w -d -p "mass" "CO2","H2O"
 ```
 
 ### Statistical methods
-The methods for plotting the generated data are contained in the an `hdf5` or in script are found in `pyplume.stats`
+The methods for plotting the generated data are contained in the an `hdf5` or in script are found in `pyplume.statistics`
 
 ### Testing
 Each python file has an associated test file which contains unit test functions. As the package is developed, more functions will be added and integrated function tests will be added. Likewise, more information will be included here when possible.
