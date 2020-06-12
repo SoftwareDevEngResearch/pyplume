@@ -43,6 +43,7 @@
 }
 
 
+
 \begin{document}
 
 
@@ -54,6 +55,7 @@
 
 \institute{A.~Walker \at
            School of Mechanical, Industrial, and Manufacturing Engineering, Oregon State University, Corvallis, OR, USA \\
+
            \email{walkanth@oregonstate.edu}
 }
 \date{Received: date / Accepted: date}
@@ -68,7 +70,9 @@ As society continues to relay on the burning of fuel to extract energy, it is im
 
 
 \section{Introduction}
+
 Chemistry plays an important role in many aspects of today's society such as transportation, healthcare, energy production, and environmental safety and protection. As society continues to relay on the burning of matter to extract energy, it is important to understand the impact that our actions have on our health and the environment. Is all the fuel we burn detrimental to our health in the long term? To what degree can we safely continue our way of life? Are we destroying other forms of life on the planet as well with out behavior? The list of important questions goes on and answering them is no minor feat.
+
 
 Answering these questions definitively requires scientific study to develop and model the lifespan and behavior of products from burning matter. Small scale phenomena can be analyzed experimentally to determine constituents and potential impacts. However, how do you experimentally model wildfire that burns hundreds of thousands of acres with an immense variety of different fuels both living and dead? How do you model the burning of a jet fuel which has thousands of different chemical species to track? How do you follow the products from both scenarios throughout the atmosphere across the world? The answer would seem to be computational modeling, but it has it's limitations as well. First and foremost, modeling such complicated phenomena requires a lot of computing resources. The models can be simplified to use less resources but at the cost of accuracy.
 
@@ -84,6 +88,7 @@ Aircraft contrails are a large contributor to radiative forcing
 \begin{figure}[htb!]
     \centering
     \includegraphics[scale=\SCALE]{examples/report/figures/general.pdf}
+
     \caption{General concept for modeling exhaust networks in pyplume.}
     \label{fig:general}
 \end{figure}
@@ -95,6 +100,7 @@ These ideas led to the development of three models within \pyplume: \texttt{simp
 \begin{figure}[htb!]
     \centering
     \includegraphics[scale=\SCALE,trim=1cm 5cm 1cm 4cm]{examples/report/figures/simple.pdf}
+
     \caption{Simple model for testing and developing.}
     \label{fig:simple}
 \end{figure}
@@ -139,6 +145,7 @@ These adjacency matrices could be further used to specify reverse flow into reac
 \begin{figure}[htb!]
     \centering
     \includegraphics[scale=\SCALE,trim=1cm 1cm 1cm 1cm]{examples/report/figures/linear.pdf}
+
     \caption{Linear model for developing a less well mixed system.}
     \label{fig:linear}
 \end{figure}
@@ -148,6 +155,7 @@ where $\dot{m_i}$ is the mass flow from a specific reactor, $m_i$ is mass of tha
 \begin{figure}[htb!]
     \centering
     \includegraphics[scale=\SCALE,trim=1cm 1cm 1cm 1cm]{examples/report/figures/grid.pdf}
+
     \caption{Grid model for developing a less well mixed system.}
     \label{fig:grid}
 \end{figure}
@@ -226,6 +234,7 @@ optional arguments:
 
 
 \subsection{\textbf{Script}}
+
 
 
 

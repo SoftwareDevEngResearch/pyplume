@@ -17,6 +17,7 @@ Otherwise, the package can be installed with `conda` as
 
 ```shell
 conda install -c anthony-walker pyplume
+
 ```
 #### Pip
 This package can also be [pip](https://pypi.org/project/pyplume/) installed but `pip` will not install the necessary dependencies---so make sure they're installed first by whatever means.
