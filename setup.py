@@ -5,7 +5,7 @@ with open("README.md", encoding='utf-8') as fh:
 
 setuptools.setup(
     name="pyplume",
-    version="0.0.4",
+    version="0.0.5",
     author="Anthony Walker",
     author_email="walkanth@oregonstate.edu",
     license='BSD 3-clause "New" or "Revised License"',
@@ -15,10 +15,10 @@ setuptools.setup(
     url="https://github.com/SoftwareDevEngResearch/plume-generation-and-analysis",
     entry_points={
         'console_scripts': [
-            'pyplume.mech=pyplume.mech:mechCLI',
-            'pyplume.model=pyplume.model:modelCLI',
             'pyplume.figures=pyplume.figures:figuresCLI',
-            'pyplume.statistics=pyplume.statistics:statisticsCLI'
+            'pyplume.statistics=pyplume.statistics:statisticsCLI',
+            'pyplume.model=pyplume.model:modelCLI',
+            'pyplume.mech=pyplume.mech:mechCLI'
         ]
     },
     packages=['pyplume'],
@@ -30,5 +30,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
-    install_requires=['pytest','cantera','h5py','matplotlib']
+    install_requires=['pytest','cantera','h5py','matplotlib','numpy']
 )

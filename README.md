@@ -3,27 +3,40 @@ This package is intended to build reactor network models for exhaust plumes base
 
 ### Installation
 
-This package can be installed via [conda](https://anaconda.org/anthony-walker/pyplume) and [pip](https://pypi.org/project/pyplume/). Note, the appropriate channels have to be available to conda or the install will fail. Namely my channel `anthony-walker` and `cantera`. I suggest creating a `conda` environment as
+#### Conda
+This package can be installed via [conda](https://anaconda.org/anthony-walker/pyplume) but the appropriate channels have to be available to conda or the install will fail. I suggest creating an environment via
 
 ```shell
-conda create --name exhaustModeling -c anthony-walker -c cantera pyplume
+conda create --name pyplume -c anthony-walker -c cantera -c conda-forge pyplume
 ```
-
-Otherwise, the package can be install with `conda` as
+This should ensure that all the appropriate channels are accessible. If you know they are added, you can use
+```shell
+conda create --name pyplume -c anthony-walker pyplume
+```
+Otherwise, the package can be installed with `conda` as
 
 ```shell
-  conda install -c anthony-walker pyplume
+conda install -c anthony-walker pyplume
 ```
-or it can be install with `pip` but `pip` will not install the necessary dependencies---this is done with
+#### Pip
+This package can also be [pip](https://pypi.org/project/pyplume/) installed but `pip` will not install the necessary dependencies---so make sure they're installed first by whatever means.
 
 ```shell
-  pip install pyplume
+pip install pyplume
 ```
 
-This package relies on [Cantera](https://cantera.org/) and other packages. If there is a failure in the `conda install` process be sure to check that the appropriate channels are added, e.g.,
+#### Troubleshooting installation
+
+This package relies on [Cantera](https://cantera.org/) and other packages. If there is a failure in the `conda install` process be sure to check that the appropriate channels are added or add them to the install command, e.g.,
+
+```shell
+conda create --name pyplume -c anthony-walker -c cantera -c conda-forge pyplume
+```
 
 ```shell
 conda config --add channels cantera
+conda config --add channels conda-forge
+conda config --add channels anthony-walker
 ```
 
 ### Mechanism management

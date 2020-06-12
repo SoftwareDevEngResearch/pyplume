@@ -11,10 +11,10 @@ source:
 build:
   number: 0
   entry_points:
-    - pyplume.mech=pyplume.mech:mechCLI
-    - pyplume.model=pyplume.model:modelCLI
     - pyplume.figures=pyplume.figures:figuresCLI
     - pyplume.statistics=pyplume.statistics:statisticsCLI
+    - pyplume.model=pyplume.model:modelCLI
+    - pyplume.mech=pyplume.mech:mechCLI
   script: "{{ PYTHON }} -m pip install . -vv"
 
 requirements:
@@ -36,10 +36,10 @@ test:
   imports:
     - pyplume
   commands:
-    - pyplume.mech --help
-    - pyplume.model --help
     - pyplume.figures --help
     - pyplume.statistics --help
+    - pyplume.model --help
+    - pyplume.mech --help
 
 about:
   home: "https://github.com/SoftwareDevEngResearch/plume-generation-and-analysis"
